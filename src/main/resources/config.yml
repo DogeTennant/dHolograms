@@ -1,0 +1,28 @@
+# dHolograms Configuration
+
+language: en_us
+
+storage:
+  # Storage type: yml or mysql
+  type: yml
+  mysql:
+    host: localhost
+    port: 3306
+    database: dholograms
+    username: root
+    password: ''
+    pool-size: 5
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+
+holograms:
+  # How often (in ticks) to refresh PlaceholderAPI placeholders and check visibility.
+  # 20 ticks = 1 second. Lower = more responsive, higher = less CPU usage.
+  refresh-ticks: 20
+  # Default view distance in blocks for new holograms.
+  default-range: 64.0
+  # Default vertical spacing between lines (in blocks) for new holograms.
+  default-line-height: 0.3
+  # Minimum ticks between click-action executions per player (0 = no cooldown).
+  click-cooldown-ticks: 10

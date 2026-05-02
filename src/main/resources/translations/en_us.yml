@@ -1,0 +1,173 @@
+# dHolograms - English (en_us)
+# All values support MiniMessage formatting.
+# Available placeholders per-message are noted in comments.
+
+prefix: '<dark_gray>[<aqua>dHolograms</aqua>]</dark_gray> '
+
+# General
+no-permission: '{prefix}<red>You do not have permission to do that.'
+player-only: '{prefix}<red>This command can only be used by players.'
+invalid-usage: '{prefix}<red>Usage: <gray>{usage}'
+unknown-subcommand: '{prefix}<red>Unknown subcommand. Use <gray>/dh help</gray> for a list of commands.'
+
+# Hologram management
+hologram-created: '{prefix}<green>Hologram <aqua>{name}</aqua> created at your location.'
+hologram-deleted: '{prefix}<green>Hologram <aqua>{name}</aqua> deleted.'
+hologram-not-found: '{prefix}<red>Hologram <aqua>{name}</aqua> not found.'
+hologram-already-exists: '{prefix}<red>A hologram named <aqua>{name}</aqua> already exists.'
+hologram-moved: '{prefix}<green>Hologram <aqua>{name}</aqua> moved to your location.'
+hologram-cloned: '{prefix}<green>Hologram <aqua>{name}</aqua> cloned as <aqua>{newname}</aqua>.'
+hologram-renamed: '{prefix}<green>Hologram <aqua>{name}</aqua> renamed to <aqua>{newname}</aqua>.'
+hologram-list-header: '{prefix}<aqua>Holograms ({count}):'
+hologram-list-entry: '  <gray>- <aqua>{name}</aqua> <dark_gray>(<white>{world}</white> {x}, {y}, {z})'
+hologram-list-empty: '{prefix}<gray>No holograms have been created yet.'
+hologram-teleport: '{prefix}<green>Teleported to hologram <aqua>{name}</aqua>.'
+hologram-info-header: '{prefix}<aqua>Info: <white>{name}'
+hologram-info-location: '  <gray>Location: <white>{world} {x}, {y}, {z}'
+hologram-info-lines: '  <gray>Lines: <white>{count}'
+hologram-info-pages: '  <gray>Pages: <white>{count}'
+hologram-info-range: '  <gray>Range: <white>{range} blocks'
+hologram-info-refresh: '  <gray>Refresh: <white>{ticks} ticks'
+hologram-info-tag: '  <gray>Tag: <white>{tag}'
+hologram-info-permission: '  <gray>View permission: <white>{permission}'
+
+# Line management
+line-added: '{prefix}<green>Line added to <aqua>{name}</aqua>.'
+line-set: '{prefix}<green>Line <aqua>{index}</aqua> of <aqua>{name}</aqua> updated.'
+line-removed: '{prefix}<green>Line <aqua>{index}</aqua> removed from <aqua>{name}</aqua>.'
+line-inserted: '{prefix}<green>Line inserted at position <aqua>{index}</aqua> in <aqua>{name}</aqua>.'
+line-height-set: '{prefix}<green>Height offset for line <aqua>{index}</aqua> set to <aqua>{height}</aqua>.'
+line-xoffset-set: '{prefix}<green>X offset for line <aqua>{index}</aqua> set to <aqua>{offset}</aqua> blocks.'
+line-zoffset-set: '{prefix}<green>Z offset for line <aqua>{index}</aqua> set to <aqua>{offset}</aqua> blocks.'
+anim-set: '{prefix}<green>Line <aqua>{index}</aqua> animation set to <aqua>{type}</aqua>.'
+anim-cleared: '{prefix}<green>Animation cleared from line <aqua>{index}</aqua>.'
+anim-not-applicable: '{prefix}<red>Line <aqua>{index}</aqua> is not a text line.'
+anim-invalid-color: '{prefix}<red>Invalid colour <aqua>{value}</aqua>. Use <gray>#RRGGBB</gray> or a colour name.'
+line-invalid-index: '{prefix}<red>Invalid line index <aqua>{index}</aqua>. Hologram has <aqua>{count}</aqua> line(s).'
+
+# Display settings
+display-billboard-set: '{prefix}<green>Billboard mode set to <aqua>{value}</aqua>.'
+display-alignment-set: '{prefix}<green>Text alignment set to <aqua>{value}</aqua>.'
+display-scale-set: '{prefix}<green>Scale set to <aqua>{x}</aqua>, <aqua>{y}</aqua>, <aqua>{z}</aqua>.'
+display-background-set: '{prefix}<green>Background color set to <aqua>{value}</aqua>.'
+display-shadow-set: '{prefix}<green>Shadow set to <aqua>{value}</aqua>.'
+display-range-set: '{prefix}<green>View range set to <aqua>{value}</aqua> blocks.'
+display-linewidth-set: '{prefix}<green>Line width set to <aqua>{value}</aqua> pixels. (Text wraps at this width; alignment is then visible.)'
+display-facing-set: '{prefix}<green>Facing set to <aqua>{value}</aqua>° (0=south, 90=west, 180=north, 270=east). Effective with FIXED billboard.'
+display-downorigin-set: '{prefix}<green>Down-origin set to <aqua>{value}</aqua>.'
+display-updaterange-set: '{prefix}<green>Update range set to <aqua>{value}</aqua> blocks. PAPI placeholders only refresh within this radius.'
+display-invalid-value: '{prefix}<red>Invalid value <aqua>{value}</aqua> for setting <aqua>{setting}</aqua>.'
+
+# Near command
+near-header: '{prefix}<aqua>Holograms within <white>{distance}</white> blocks ({count}):'
+near-entry: '  <gray>- <aqua>{name}</aqua> <dark_gray>(<white>{distance}m</white> - {x}, {y}, {z})'
+near-empty: '{prefix}<gray>No holograms found within <white>{distance}</white> blocks.'
+
+# Tag system
+tag-set: '{prefix}<green>Tag <aqua>{tag}</aqua> assigned to <aqua>{name}</aqua>.'
+tag-cleared: '{prefix}<green>Tag cleared from <aqua>{name}</aqua>.'
+tag-list-header: '{prefix}<aqua>Holograms tagged <white>{tag}</white> ({count}):'
+tag-list-entry: '  <gray>- <aqua>{name}'
+tag-list-empty: '{prefix}<gray>No holograms found with tag <aqua>{tag}</aqua>.'
+tag-deleted: '{prefix}<green>Deleted <aqua>{count}</aqua> hologram(s) with tag <aqua>{tag}</aqua>.'
+
+# Page navigation action bar
+page-turned: '<gray>Page <white>{current} <gray>/ <white>{total}'
+
+# Page system
+page-added: '{prefix}<green>Page added to <aqua>{name}</aqua>. Now has <aqua>{count}</aqua> page(s).'
+page-removed: '{prefix}<green>Page <aqua>{index}</aqua> removed from <aqua>{name}</aqua>.'
+page-cannot-remove-last: '{prefix}<red>Cannot remove the only page of a hologram.'
+page-invalid-index: '{prefix}<red>Invalid page index <aqua>{index}</aqua>. Hologram has <aqua>{count}</aqua> page(s).'
+page-info-header: '{prefix}<aqua>Pages for <white>{name}</white> (<aqua>{count}</aqua> total):'
+page-info-entry: '  <gray>Page <aqua>{index}</aqua>: <white>{lines}</white> line(s)'
+
+# Click-to-execute
+click-set: '{prefix}<green><aqua>{type}</aqua> click action set on <aqua>{name}</aqua>: <gray>{actions}</gray>'
+click-cleared: '{prefix}<green><aqua>{type}</aqua> click action cleared from <aqua>{name}</aqua>.'
+click-invalid-type: '{prefix}<red>Invalid click type <aqua>{value}</aqua>. Valid: right, left, shift-right, shift-left.'
+
+# Disable / Enable
+hologram-disabled: '{prefix}<green>Hologram <aqua>{name}</aqua> disabled.'
+hologram-enabled: '{prefix}<green>Hologram <aqua>{name}</aqua> enabled.'
+hologram-already-disabled: '{prefix}<red>Hologram <aqua>{name}</aqua> is already disabled.'
+hologram-not-disabled: '{prefix}<red>Hologram <aqua>{name}</aqua> is not disabled.'
+
+# Center
+hologram-centered: '{prefix}<green>Hologram <aqua>{name}</aqua> centered on block.'
+
+# Swap lines
+lines-swapped: '{prefix}<green>Lines <aqua>{a}</aqua> and <aqua>{b}</aqua> in <aqua>{name}</aqua> swapped.'
+
+# Per-line permission
+line-permission-set: '{prefix}<green>Line <aqua>{index}</aqua> in <aqua>{name}</aqua> requires permission <aqua>{permission}</aqua>.'
+line-permission-cleared: '{prefix}<green>Line <aqua>{index}</aqua> permission cleared from <aqua>{name}</aqua>.'
+
+# Line info
+line-info-header: '{prefix}<aqua>Line <white>{index}</white> of <white>{name}</white>:'
+line-info-type: '  <gray>Type: <white>{type}'
+line-info-content: '  <gray>Content: <white>{content}'
+line-info-height: '  <gray>Height offset: <white>{height}'
+line-info-offset: '  <gray>X/Z offset: <white>{x} / {z}'
+line-info-permission: '  <gray>View permission: <white>{permission}'
+line-info-anim: '  <gray>Animation: <white>{type} <gray>(speed: <white>{speed}<gray>)'
+line-info-rotation: '  <gray>Rotation: <white>{speed} deg/tick <gray>(bob: <white>{bob}<gray>)'
+
+# Flags
+flag-added: '{prefix}<green>Flag <aqua>{flag}</aqua> added to <aqua>{name}</aqua>.'
+flag-removed: '{prefix}<green>Flag <aqua>{flag}</aqua> removed from <aqua>{name}</aqua>.'
+flag-invalid: '{prefix}<red>Unknown flag <aqua>{value}</aqua>. Valid: DISABLE_UPDATING, DISABLE_PLACEHOLDERS, DISABLE_ANIMATIONS, DISABLE_ACTIONS.'
+flag-list-header: '{prefix}<aqua>Flags on <white>{name}</white>:'
+flag-list-empty: '{prefix}<gray>No flags set on <aqua>{name}</aqua>.'
+
+# Line rotation
+linerotation-set: '{prefix}<green>Line <aqua>{index}</aqua> rotation set to <aqua>{speed}</aqua> deg/tick.'
+linerotation-not-applicable: '{prefix}<red>Line <aqua>{index}</aqua> is not an item or block line.'
+
+# Visibility
+hologram-shown: '{prefix}<green>Hologram <aqua>{name}</aqua> is now shown to <aqua>{player}</aqua>.'
+hologram-hidden: '{prefix}<green>Hologram <aqua>{name}</aqua> is now hidden from <aqua>{player}</aqua>.'
+
+# Config / reload
+reload-success: '{prefix}<green>Configuration and language files reloaded.'
+language-changed: '{prefix}<green>Language changed to <aqua>{code}</aqua>.'
+language-not-found: '{prefix}<red>Language file for <aqua>{code}</aqua> not found.'
+
+# Help pages
+help-header: '<gradient:aqua:blue>━━━ dHolograms Help (Page {page}/{total}) ━━━</gradient>'
+help-footer: '<gray>  Use <white>/dh help {next}</white> for more.'
+help-entry: '  <aqua>{command} <dark_aqua>{args} <gray>- {description}'
+help-commands:
+  create: ['create <name>', 'Create a hologram at your location.']
+  delete: ['delete <name>', 'Delete a hologram.']
+  list: ['list', 'List all holograms.']
+  info: ['info <name>', 'Show hologram details.']
+  move: ['move <name>', 'Move hologram to your location.']
+  tp: ['tp <name>', 'Teleport to a hologram.']
+  addline: ['addline <name> <content>', 'Append a line. Prefix with item: for an item display.']
+  setline: ['setline <name> <#> <content>', 'Replace a line.']
+  removeline: ['removeline <name> <#>', 'Remove a line.']
+  insertline: ['insertline <name> <#> <content>', 'Insert a line at index.']
+  lineheight: ['lineheight <name> <#> <height>', 'Set per-line height offset.']
+linexoffset: ['linexoffset <name> <#> <blocks>', 'Set per-line horizontal (X) offset.']
+  linezoffset: ['linezoffset <name> <#> <blocks>', 'Set per-line depth (Z) offset.']
+  lineanim: ['lineanim <name> <#> <rainbow|wave|burn|typewriter|scroll|none> [params]', 'Set text animation effect on a line.']
+  rename: ['rename <name> <newname>', 'Rename a hologram.']
+  display: ['display <name> <setting> <value>', 'Adjust display settings (billboard/align/scale/background/shadow/range/updaterange/linewidth/facing/downorigin).']
+  show: ['show <name> <player>', 'Force-show hologram to a player.']
+  hide: ['hide <name> <player>', 'Force-hide hologram from a player.']
+  clone: ['clone <name> <newname>', 'Clone a hologram.']
+  near: ['near <distance>', 'List holograms within a radius.']
+  tag: ['tag <name> <tag|none>  |  tag list/delete <tag>', 'Manage hologram tags.']
+  page: ['page <name> <add|remove <#>|info|<#> ...>', 'Manage hologram pages.']
+  click: ['click <name> set <right|left|shift-right|shift-left> <actions>', 'Set per-click-type actions (COMMAND/CONSOLE/MESSAGE/SOUND/TELEPORT/PERMISSION/CONNECT/NEXT_PAGE/PREV_PAGE/PAGE).']
+  linerotation: ['linerotation <name> <#> <deg/tick> [bob]', 'Set item rotation speed and optional bob amplitude (0=off).']
+  disable: ['disable <name>', 'Disable a hologram (hide from all players).']
+  enable: ['enable <name>', 'Re-enable a disabled hologram.']
+  swaplines: ['swaplines <name> <#1> <#2>', 'Swap two lines by index.']
+  linepermission: ['linepermission <name> <#> [permission]', 'Set (or clear) a view permission on a line.']
+  center: ['center <name>', 'Center hologram on the middle of its block.']
+  lineinfo: ['lineinfo <name> <#>', 'Show details about a specific line.']
+  flag: ['flag <name> add|remove|list [flag]', 'Manage hologram flags (DISABLE_UPDATING/PLACEHOLDERS/ANIMATIONS/ACTIONS).']
+  reload: ['reload', 'Reload config and language files.']
+  language: ['language <code>', 'Switch language at runtime.']

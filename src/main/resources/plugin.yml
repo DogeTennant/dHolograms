@@ -1,0 +1,23 @@
+name: dHolograms
+version: '${project.version}'
+main: com.dogetennant.dholograms.DHolograms
+api-version: '1.21'
+authors:
+  - dogetennant
+description: Lightweight, feature-rich hologram plugin using modern display entities.
+
+softdepend:
+  - PlaceholderAPI
+
+commands:
+  dholograms:
+    description: Main dHolograms command.
+    usage: /dholograms <subcommand> - use /dh help for a list
+    aliases:
+      - dh
+    permission: dholograms.admin
+
+permissions:
+  dholograms.admin:
+    description: Full access to all dHolograms commands.
+    default: op

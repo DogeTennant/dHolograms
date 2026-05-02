@@ -1,0 +1,167 @@
+# dHolograms - Čeština (cs_cz)
+
+prefix: '<dark_gray>[<aqua>dHolograms</aqua>]</dark_gray> '
+
+# Obecné
+no-permission: '{prefix}<red>Nemáte oprávnění k provedení této akce.'
+player-only: '{prefix}<red>Tento příkaz může používat pouze hráč.'
+invalid-usage: '{prefix}<red>Použití: <gray>{usage}'
+unknown-subcommand: '{prefix}<red>Neznámý podpříkaz. Použijte <gray>/dh help</gray> pro seznam příkazů.'
+
+# Správa hologramů
+hologram-created: '{prefix}<green>Hologram <aqua>{name}</aqua> byl vytvořen na vašem místě.'
+hologram-deleted: '{prefix}<green>Hologram <aqua>{name}</aqua> byl smazán.'
+hologram-not-found: '{prefix}<red>Hologram <aqua>{name}</aqua> nebyl nalezen.'
+hologram-already-exists: '{prefix}<red>Hologram s názvem <aqua>{name}</aqua> již existuje.'
+hologram-moved: '{prefix}<green>Hologram <aqua>{name}</aqua> byl přesunut na vaše místo.'
+hologram-cloned: '{prefix}<green>Hologram <aqua>{name}</aqua> byl naklonován jako <aqua>{newname}</aqua>.'
+hologram-renamed: '{prefix}<green>Hologram <aqua>{name}</aqua> přejmenován na <aqua>{newname}</aqua>.'
+hologram-list-header: '{prefix}<aqua>Hologramy ({count}):'
+hologram-list-entry: '  <gray>- <aqua>{name}</aqua> <dark_gray>(<white>{world}</white> {x}, {y}, {z})'
+hologram-list-empty: '{prefix}<gray>Zatím nebyly vytvořeny žádné hologramy.'
+hologram-teleport: '{prefix}<green>Teleportováno k hologramu <aqua>{name}</aqua>.'
+hologram-info-header: '{prefix}<aqua>Info: <white>{name}'
+hologram-info-location: '  <gray>Pozice: <white>{world} {x}, {y}, {z}'
+hologram-info-lines: '  <gray>Řádky: <white>{count}'
+hologram-info-pages: '  <gray>Stránky: <white>{count}'
+hologram-info-range: '  <gray>Dosah: <white>{range} bloků'
+hologram-info-refresh: '  <gray>Obnovení: <white>{ticks} ticků'
+hologram-info-tag: '  <gray>Štítek: <white>{tag}'
+hologram-info-permission: '  <gray>Oprávnění pro zobrazení: <white>{permission}'
+
+# Správa řádků
+line-added: '{prefix}<green>Řádek byl přidán do <aqua>{name}</aqua>.'
+line-set: '{prefix}<green>Řádek <aqua>{index}</aqua> hologramu <aqua>{name}</aqua> byl aktualizován.'
+line-removed: '{prefix}<green>Řádek <aqua>{index}</aqua> byl odebrán z <aqua>{name}</aqua>.'
+line-inserted: '{prefix}<green>Řádek byl vložen na pozici <aqua>{index}</aqua> v <aqua>{name}</aqua>.'
+line-height-set: '{prefix}<green>Výška řádku <aqua>{index}</aqua> nastavena na <aqua>{height}</aqua>.'
+line-xoffset-set: '{prefix}<green>Horizontální posun řádku <aqua>{index}</aqua> nastaven na <aqua>{offset}</aqua> bloků.'
+line-zoffset-set: '{prefix}<green>Hloubkový posun řádku <aqua>{index}</aqua> nastaven na <aqua>{offset}</aqua> bloků.'
+anim-set: '{prefix}<green>Animace řádku <aqua>{index}</aqua> nastavena na <aqua>{type}</aqua>.'
+anim-cleared: '{prefix}<green>Animace odebrána z řádku <aqua>{index}</aqua>.'
+anim-not-applicable: '{prefix}<red>Řádek <aqua>{index}</aqua> není textový řádek.'
+anim-invalid-color: '{prefix}<red>Neplatná barva <aqua>{value}</aqua>. Použijte <gray>#RRGGBB</gray> nebo název barvy.'
+line-invalid-index: '{prefix}<red>Neplatný index řádku <aqua>{index}</aqua>. Hologram má <aqua>{count}</aqua> řádek/řádků.'
+
+# Nastavení zobrazení
+display-billboard-set: '{prefix}<green>Režim billboard nastaven na <aqua>{value}</aqua>.'
+display-alignment-set: '{prefix}<green>Zarovnání textu nastaveno na <aqua>{value}</aqua>.'
+display-scale-set: '{prefix}<green>Měřítko nastaveno na <aqua>{x}</aqua>, <aqua>{y}</aqua>, <aqua>{z}</aqua>.'
+display-background-set: '{prefix}<green>Barva pozadí nastavena na <aqua>{value}</aqua>.'
+display-shadow-set: '{prefix}<green>Stín nastaven na <aqua>{value}</aqua>.'
+display-range-set: '{prefix}<green>Dosah zobrazení nastaven na <aqua>{value}</aqua> bloků.'
+display-linewidth-set: '{prefix}<green>Šířka řádku nastavena na <aqua>{value}</aqua> pixelů. (Text se zalomí na této šířce; zarovnání je pak viditelné.)'
+display-facing-set: '{prefix}<green>Natočení nastaveno na <aqua>{value}</aqua>° (0=jih, 90=západ, 180=sever, 270=východ). Funguje s billboard: FIXED.'
+display-downorigin-set: '{prefix}<green>Down-origin nastaven na <aqua>{value}</aqua>.'
+display-updaterange-set: '{prefix}<green>Dosah aktualizace nastaven na <aqua>{value}</aqua> bloků. Zástupné symboly PAPI se obnoví pouze v tomto okruhu.'
+display-invalid-value: '{prefix}<red>Neplatná hodnota <aqua>{value}</aqua> pro nastavení <aqua>{setting}</aqua>.'
+
+# Příkaz near
+near-header: '{prefix}<aqua>Hologramy do <white>{distance}</white> bloků ({count}):'
+near-entry: '  <gray>- <aqua>{name}</aqua> <dark_gray>(<white>{distance}m</white> - {x}, {y}, {z})'
+near-empty: '{prefix}<gray>V okruhu <white>{distance}</white> bloků nebyly nalezeny žádné hologramy.'
+
+# Systém štítků
+tag-set: '{prefix}<green>Štítek <aqua>{tag}</aqua> byl přiřazen hologramu <aqua>{name}</aqua>.'
+tag-cleared: '{prefix}<green>Štítek byl odebrán z <aqua>{name}</aqua>.'
+tag-list-header: '{prefix}<aqua>Hologramy se štítkem <white>{tag}</white> ({count}):'
+tag-list-entry: '  <gray>- <aqua>{name}'
+tag-list-empty: '{prefix}<gray>Nebyly nalezeny žádné hologramy se štítkem <aqua>{tag}</aqua>.'
+tag-deleted: '{prefix}<green>Smazáno <aqua>{count}</aqua> hologram(ů) se štítkem <aqua>{tag}</aqua>.'
+
+# Přechod stránky (action bar)
+page-turned: '<gray>Stránka <white>{current} <gray>/ <white>{total}'
+
+# Systém stránek
+page-added: '{prefix}<green>Stránka přidána do <aqua>{name}</aqua>. Nyní má <aqua>{count}</aqua> stránek.'
+page-removed: '{prefix}<green>Stránka <aqua>{index}</aqua> odebrána z <aqua>{name}</aqua>.'
+page-cannot-remove-last: '{prefix}<red>Nelze odebrat jedinou stránku hologramu.'
+page-invalid-index: '{prefix}<red>Neplatný index stránky <aqua>{index}</aqua>. Hologram má <aqua>{count}</aqua> stránek.'
+page-info-header: '{prefix}<aqua>Stránky hologramu <white>{name}</white> (<aqua>{count}</aqua> celkem):'
+page-info-entry: '  <gray>Stránka <aqua>{index}</aqua>: <white>{lines}</white> řádků'
+
+# Kliknutí pro spuštění
+click-set: '{prefix}<green>Akce kliknutí nastavena na <aqua>{name}</aqua>: spustí <gray>{command}</gray> jako <aqua>{source}</aqua>.'
+click-cleared: '{prefix}<green>Akce kliknutí odebrána z <aqua>{name}</aqua>.'
+
+# Zakázání / povolení
+hologram-disabled: '{prefix}<green>Hologram <aqua>{name}</aqua> byl zakázán.'
+hologram-enabled: '{prefix}<green>Hologram <aqua>{name}</aqua> byl povolen.'
+hologram-already-disabled: '{prefix}<red>Hologram <aqua>{name}</aqua> je již zakázán.'
+hologram-not-disabled: '{prefix}<red>Hologram <aqua>{name}</aqua> není zakázán.'
+
+# Vystředění
+hologram-centered: '{prefix}<green>Hologram <aqua>{name}</aqua> byl vystředěn na blok.'
+
+# Prohození řádků
+lines-swapped: '{prefix}<green>Řádky <aqua>{a}</aqua> a <aqua>{b}</aqua> v <aqua>{name}</aqua> prohozeny.'
+
+# Oprávnění pro řádek
+line-permission-set: '{prefix}<green>Řádek <aqua>{index}</aqua> v <aqua>{name}</aqua> vyžaduje oprávnění <aqua>{permission}</aqua>.'
+line-permission-cleared: '{prefix}<green>Oprávnění řádku <aqua>{index}</aqua> odebráno z <aqua>{name}</aqua>.'
+
+# Info o řádku
+line-info-header: '{prefix}<aqua>Řádek <white>{index}</white> hologramu <white>{name}</white>:'
+line-info-type: '  <gray>Typ: <white>{type}'
+line-info-content: '  <gray>Obsah: <white>{content}'
+line-info-height: '  <gray>Výška: <white>{height}'
+line-info-offset: '  <gray>X/Z posun: <white>{x} / {z}'
+line-info-permission: '  <gray>Oprávnění pro zobrazení: <white>{permission}'
+line-info-anim: '  <gray>Animace: <white>{type} <gray>(rychlost: <white>{speed}<gray>)'
+line-info-rotation: '  <gray>Rotace: <white>{speed} °/tick <gray>(bob: <white>{bob}<gray>)'
+
+# Příznaky
+flag-added: '{prefix}<green>Příznak <aqua>{flag}</aqua> přidán k <aqua>{name}</aqua>.'
+flag-removed: '{prefix}<green>Příznak <aqua>{flag}</aqua> odebrán z <aqua>{name}</aqua>.'
+flag-invalid: '{prefix}<red>Neznámý příznak <aqua>{value}</aqua>. Platné: DISABLE_UPDATING, DISABLE_PLACEHOLDERS, DISABLE_ANIMATIONS, DISABLE_ACTIONS.'
+flag-list-header: '{prefix}<aqua>Příznaky hologramu <white>{name}</white>:'
+flag-list-empty: '{prefix}<gray>Hologram <aqua>{name}</aqua> nemá žádné příznaky.'
+
+# Rotace řádku
+linerotation-set: '{prefix}<green>Rotace řádku <aqua>{index}</aqua> nastavena na <aqua>{speed}</aqua> stupňů/tick.'
+linerotation-not-applicable: '{prefix}<red>Řádek <aqua>{index}</aqua> není item ani blokový řádek.'
+
+# Viditelnost
+hologram-shown: '{prefix}<green>Hologram <aqua>{name}</aqua> je nyní zobrazen hráči <aqua>{player}</aqua>.'
+hologram-hidden: '{prefix}<green>Hologram <aqua>{name}</aqua> je nyní skryt před hráčem <aqua>{player}</aqua>.'
+
+# Konfigurace / reload
+reload-success: '{prefix}<green>Konfigurace a jazykové soubory byly znovu načteny.'
+language-changed: '{prefix}<green>Jazyk změněn na <aqua>{code}</aqua>.'
+language-not-found: '{prefix}<red>Jazykový soubor pro <aqua>{code}</aqua> nebyl nalezen.'
+
+# Stránky nápovědy
+help-header: '<gradient:aqua:blue>━━━ dHolograms Nápověda (Strana {page}/{total}) ━━━</gradient>'
+help-footer: '<gray>  Použijte <white>/dh help {next}</white> pro další stránku.'
+help-entry: '  <aqua>{command} <dark_aqua>{args} <gray>- {description}'
+help-commands:
+  create: ['create <název>', 'Vytvoří hologram na vašem místě.']
+  delete: ['delete <název>', 'Smaže hologram.']
+  list: ['list', 'Zobrazí seznam hologramů.']
+  info: ['info <název>', 'Zobrazí detaily hologramu.']
+  move: ['move <název>', 'Přesune hologram na vaše místo.']
+  tp: ['tp <název>', 'Teleportuje vás k hologramu.']
+  addline: ['addline <název> <obsah>', 'Přidá řádek. Prefixujte item: pro zobrazení předmětu.']
+  setline: ['setline <název> <#> <obsah>', 'Nahradí řádek.']
+  removeline: ['removeline <název> <#>', 'Odebere řádek.']
+  insertline: ['insertline <název> <#> <obsah>', 'Vloží řádek na daný index.']
+  lineheight: ['lineheight <název> <#> <výška>', 'Nastaví výšku konkrétního řádku.']
+linexoffset: ['linexoffset <název> <#> <bloky>', 'Nastaví horizontální posun konkrétního řádku.']
+  display: ['display <název> <nastavení> <hodnota>', 'Upraví nastavení zobrazení (billboard/align/scale/background/shadow/range/updaterange/linewidth/facing/downorigin).']
+  show: ['show <název> <hráč>', 'Zobrazí hologram konkrétnímu hráči.']
+  hide: ['hide <název> <hráč>', 'Skryje hologram před konkrétním hráčem.']
+  clone: ['clone <název> <novýnázev>', 'Naklonuje hologram.']
+  near: ['near <vzdálenost>', 'Zobrazí hologramy v daném okruhu.']
+  tag: ['tag <název> <štítek|none>  |  tag list/delete <štítek>', 'Správa štítků hologramů.']
+  page: ['page <název> <add|remove <#>|info|<#> ...>', 'Správa stránek hologramu.']
+  click: ['click <název> <set [console] <příkaz>|clear>', 'Nastav akci při kliknutí.']
+  linerotation: ['linerotation <název> <#> <deg/tick> [bob]', 'Rotace item řádku a volitelná amplituda bobání (0=vypnout).']
+  disable: ['disable <název>', 'Zakáže hologram (skryje ho před všemi hráči).']
+  enable: ['enable <název>', 'Znovu povolí zakázaný hologram.']
+  swaplines: ['swaplines <název> <#1> <#2>', 'Prohodí dva řádky.']
+  linepermission: ['linepermission <název> <#> [oprávnění]', 'Nastaví (nebo odebere) oprávnění pro zobrazení řádku.']
+  center: ['center <název>', 'Vystředí hologram na střed bloku.']
+  lineinfo: ['lineinfo <název> <#>', 'Zobrazí detaily konkrétního řádku.']
+  flag: ['flag <název> add|remove|list [příznak]', 'Spravuje příznaky hologramu (DISABLE_UPDATING/PLACEHOLDERS/ANIMATIONS/ACTIONS).']
+  reload: ['reload', 'Znovu načte konfiguraci a jazykové soubory.']
+  language: ['language <kód>', 'Přepne jazyk za běhu.']
