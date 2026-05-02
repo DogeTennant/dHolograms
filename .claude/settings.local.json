@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(mvn clean *)",
-      "WebFetch(domain:wiki.decentholograms.eu)"
-    ]
-  }
-}
