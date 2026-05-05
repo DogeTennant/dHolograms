@@ -22,6 +22,8 @@ public class DisplaySettings {
     private float facing = 0.0f;
     // When true, lines stack upward from the anchor Y instead of downward
     private boolean downOrigin = false;
+    // When true, all text lines share one unified background entity per page
+    private boolean unifiedBackground = true;
 
     public DisplaySettings() {}
 
@@ -40,6 +42,7 @@ public class DisplaySettings {
         copy.lineWidth = this.lineWidth;
         copy.facing = this.facing;
         copy.downOrigin = this.downOrigin;
+        copy.unifiedBackground = this.unifiedBackground;
         return copy;
     }
 
@@ -57,7 +60,8 @@ public class DisplaySettings {
                 + "|lineHeight=" + lineHeight
                 + "|lineWidth=" + lineWidth
                 + "|facing=" + facing
-                + "|downOrigin=" + downOrigin;
+                + "|downOrigin=" + downOrigin
+                + "|unifiedBackground=" + unifiedBackground;
     }
 
     public static DisplaySettings deserialize(String raw) {
@@ -84,6 +88,7 @@ public class DisplaySettings {
                 case "lineWidth" -> { try { ds.lineWidth = Integer.parseInt(kv[1]); } catch (NumberFormatException ignored) {} }
                 case "facing" -> { try { ds.facing = Float.parseFloat(kv[1]); } catch (NumberFormatException ignored) {} }
                 case "downOrigin" -> ds.downOrigin = Boolean.parseBoolean(kv[1]);
+                case "unifiedBackground" -> ds.unifiedBackground = Boolean.parseBoolean(kv[1]);
             }
         }
         return ds;
@@ -127,4 +132,7 @@ public class DisplaySettings {
 
     public boolean isDownOrigin() { return downOrigin; }
     public void setDownOrigin(boolean downOrigin) { this.downOrigin = downOrigin; }
+
+    public boolean isUnifiedBackground() { return unifiedBackground; }
+    public void setUnifiedBackground(boolean unifiedBackground) { this.unifiedBackground = unifiedBackground; }
 }

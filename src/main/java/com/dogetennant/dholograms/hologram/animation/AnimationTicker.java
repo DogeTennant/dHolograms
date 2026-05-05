@@ -29,6 +29,7 @@ public class AnimationTicker {
         for (Hologram hologram : plugin.getHologramManager().getAllHolograms()) {
             if (hologram.isDisabled() || hologram.hasFlag(com.dogetennant.dholograms.hologram.HologramFlag.DISABLE_ANIMATIONS)) continue;
             hologram.forEachLine(HologramLine::tick);
+            hologram.tickUnifiedDisplays();
         }
     }
 }

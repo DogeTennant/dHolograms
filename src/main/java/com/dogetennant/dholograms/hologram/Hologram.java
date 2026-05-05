@@ -2,12 +2,18 @@ package com.dogetennant.dholograms.hologram;
 
 import com.dogetennant.dholograms.DHolograms;
 import com.dogetennant.dholograms.hologram.line.HologramLine;
+import com.dogetennant.dholograms.hologram.line.TextLine;
+import com.dogetennant.dholograms.hologram.line.AnimationType;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.util.Transformation;
+import org.joml.AxisAngle4f;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.EnumSet;
@@ -38,6 +44,9 @@ public class Hologram {
     private boolean disabled = false;
     private final Set<HologramFlag> flags = EnumSet.noneOf(HologramFlag.class);
 
+    // Unified background entities — one per page (null if page has no text lines or unified mode is off)
+    private final List<TextDisplay> unifiedDisplays = new ArrayList<>();
+
     public Hologram(String name, Location location) {
         this.name = name;
         this.location = location.clone();
@@ -47,11 +56,17 @@ public class Hologram {
     // Entity lifecycle
 
     public void spawn() {
+        unifiedDisplays.clear();
         for (int p = 0; p < pages.size(); p++) {
             List<HologramLine> page = pages.get(p);
+            for (HologramLine line : page) {
+                if (line instanceof TextLine tl) tl.setUnified(displaySettings.isUnifiedBackground());
+            }
             for (int i = 0; i < page.size(); i++) {
                 page.get(i).spawn(getLineLocation(p, i));
             }
+            unifiedDisplays.add(null);
+            if (displaySettings.isUnifiedBackground()) spawnUnifiedDisplay(p);
         }
         if (pages.size() > 1) spawnNavEntities();
         if (!clickActions.isEmpty()) spawnClickEntity();
@@ -61,6 +76,7 @@ public class Hologram {
         for (List<HologramLine> page : pages) {
             for (HologramLine line : page) line.despawn();
         }
+        despawnUnifiedDisplays();
         despawnNavEntities();
         despawnClickEntity();
         viewerPages.clear();
@@ -81,6 +97,7 @@ public class Hologram {
         double bottomY = location.getY() - (maxLines - 1) * displaySettings.getLineHeight() - 0.4;
         Location clickLoc = new Location(location.getWorld(), location.getX(), bottomY, location.getZ());
         clickEntity = location.getWorld().spawn(clickLoc, Interaction.class, e -> {
+            DHolograms.getInstance().getManagedSpawns().add(e);
             e.setInteractionWidth(2.0f);
             e.setInteractionHeight(height);
             e.setResponsive(false);
@@ -108,6 +125,126 @@ public class Hologram {
         clickEntity = null;
     }
 
+    // Unified background display
+
+    private void spawnUnifiedDisplay(int pageIndex) {
+        while (unifiedDisplays.size() <= pageIndex) unifiedDisplays.add(null);
+        TextDisplay existing = unifiedDisplays.get(pageIndex);
+        if (existing != null && !existing.isDead()) existing.remove();
+
+        List<HologramLine> page = pages.get(pageIndex);
+        Location loc = null;
+        for (int i = 0; i < page.size(); i++) {
+            if (page.get(i) instanceof TextLine) {
+                loc = getLineLocation(pageIndex, i);
+                break;
+            }
+        }
+        if (loc == null || loc.getWorld() == null) {
+            unifiedDisplays.set(pageIndex, null);
+            return;
+        }
+
+        Component combined = buildCombinedText(pageIndex, null);
+        DisplaySettings ds = displaySettings;
+        TextDisplay display = loc.getWorld().spawn(loc, TextDisplay.class, entity -> {
+            DHolograms.getInstance().getManagedSpawns().add(entity);
+            entity.setVisibleByDefault(false);
+            entity.setPersistent(false);
+            entity.setGravity(false);
+            entity.setBillboard(ds.getBillboard());
+            entity.setAlignment(ds.getAlignment());
+            entity.setShadowed(ds.isShadow());
+            entity.setLineWidth(ds.getLineWidth());
+            applyUnifiedBackground(entity, ds.getBackgroundColor());
+            applyUnifiedScale(entity, ds);
+            entity.text(combined);
+        });
+        unifiedDisplays.set(pageIndex, display);
+    }
+
+    private void despawnUnifiedDisplays() {
+        for (TextDisplay d : unifiedDisplays) {
+            if (d != null && !d.isDead()) d.remove();
+        }
+        unifiedDisplays.clear();
+    }
+
+    private Component buildCombinedText(int pageIndex, Player player) {
+        List<HologramLine> page = pages.get(pageIndex);
+        var b = Component.text();
+        boolean first = true;
+        for (HologramLine line : page) {
+            if (!(line instanceof TextLine tl)) continue;
+            if (!first) b.append(Component.newline());
+            first = false;
+            // Respect per-line view permissions: blank line for lines the player can't see
+            String perm = tl.getViewPermission();
+            if (player != null && perm != null && !perm.isEmpty() && !player.hasPermission(perm)) {
+                b.append(Component.empty());
+            } else {
+                b.append(tl.getCurrentComponent(player));
+            }
+        }
+        return b.build();
+    }
+
+    /** Called by HologramManager's content-update loop to refresh PAPI placeholders. */
+    public void updateUnifiedDisplay(int pageIndex, Player player) {
+        if (!displaySettings.isUnifiedBackground()) return;
+        if (pageIndex < 0 || pageIndex >= unifiedDisplays.size()) return;
+        TextDisplay unified = unifiedDisplays.get(pageIndex);
+        if (unified == null || unified.isDead()) return;
+        unified.text(buildCombinedText(pageIndex, player));
+    }
+
+    /** Called by AnimationTicker every game tick to push animated content to unified entities. */
+    public void tickUnifiedDisplays() {
+        if (!displaySettings.isUnifiedBackground()) return;
+        for (int p = 0; p < pages.size(); p++) {
+            if (p >= unifiedDisplays.size()) break;
+            TextDisplay unified = unifiedDisplays.get(p);
+            if (unified == null || unified.isDead()) continue;
+            boolean hasAnimation = false;
+            for (HologramLine line : pages.get(p)) {
+                if (line instanceof TextLine tl && tl.getAnimationType() != AnimationType.NONE) {
+                    hasAnimation = true;
+                    break;
+                }
+            }
+            if (hasAnimation) unified.text(buildCombinedText(p, null));
+        }
+    }
+
+    /** Rebuilds the unified display text for a page after structural line changes. */
+    private void rebuildUnifiedDisplay(int pageIndex) {
+        while (unifiedDisplays.size() <= pageIndex) unifiedDisplays.add(null);
+        TextDisplay unified = unifiedDisplays.get(pageIndex);
+        if (unified == null || unified.isDead()) {
+            spawnUnifiedDisplay(pageIndex);
+        } else {
+            unified.text(buildCombinedText(pageIndex, null));
+        }
+    }
+
+    private void applyUnifiedBackground(TextDisplay entity, int argb) {
+        if (argb == -1) {
+            entity.setDefaultBackground(true);
+        } else {
+            entity.setDefaultBackground(false);
+            entity.setBackgroundColor(Color.fromARGB(
+                    (argb >> 24) & 0xFF, (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF));
+        }
+    }
+
+    private void applyUnifiedScale(TextDisplay entity, DisplaySettings ds) {
+        entity.setTransformation(new Transformation(
+                new Vector3f(0, 0, 0),
+                new AxisAngle4f(0, 0, 0, 1),
+                new Vector3f(ds.getScaleX(), ds.getScaleY(), ds.getScaleZ()),
+                new AxisAngle4f(0, 0, 0, 1)));
+    }
+
     // Nav entities
 
     private void spawnNavEntities() {
@@ -115,6 +252,7 @@ public class Hologram {
         if (navLoc.getWorld() == null) return;
 
         navDisplay = navLoc.getWorld().spawn(navLoc, TextDisplay.class, d -> {
+            DHolograms.getInstance().getManagedSpawns().add(d);
             d.text(Component.text("◀  ▶"));
             d.setVisibleByDefault(false);
             d.setPersistent(false);
@@ -124,6 +262,7 @@ public class Hologram {
 
         Location prevLoc = navLoc.clone().add(-0.4, 0, 0);
         prevNavEntity = prevLoc.getWorld().spawn(prevLoc, Interaction.class, e -> {
+            DHolograms.getInstance().getManagedSpawns().add(e);
             e.setInteractionWidth(0.4f);
             e.setInteractionHeight(0.4f);
             e.setResponsive(false);
@@ -132,6 +271,7 @@ public class Hologram {
 
         Location nextLoc = navLoc.clone().add(0.4, 0, 0);
         nextNavEntity = nextLoc.getWorld().spawn(nextLoc, Interaction.class, e -> {
+            DHolograms.getInstance().getManagedSpawns().add(e);
             e.setInteractionWidth(0.4f);
             e.setInteractionHeight(0.4f);
             e.setResponsive(false);
@@ -173,6 +313,9 @@ public class Hologram {
     public void hideFrom(Player player) {
         hiddenFrom.add(player.getUniqueId());
         DHolograms plugin = DHolograms.getInstance();
+        for (TextDisplay unified : unifiedDisplays) {
+            if (unified != null && !unified.isDead()) player.hideEntity(plugin, unified);
+        }
         for (List<HologramLine> page : pages) {
             for (HologramLine line : page) {
                 if (line.isSpawned()) player.hideEntity(plugin, line.getEntity());
@@ -207,6 +350,9 @@ public class Hologram {
             applyPageVisibility(player);
         } else {
             DHolograms plugin = DHolograms.getInstance();
+            for (TextDisplay unified : unifiedDisplays) {
+                if (unified != null && !unified.isDead()) player.hideEntity(plugin, unified);
+            }
             for (List<HologramLine> page : pages) {
                 for (HologramLine line : page) {
                     if (line.isSpawned()) player.hideEntity(plugin, line.getEntity());
@@ -221,6 +367,15 @@ public class Hologram {
         DHolograms plugin = DHolograms.getInstance();
         int currentPage = viewerPages.getOrDefault(player.getUniqueId(), 0);
         for (int p = 0; p < pages.size(); p++) {
+            // Unified background entity visibility
+            if (p < unifiedDisplays.size()) {
+                TextDisplay unified = unifiedDisplays.get(p);
+                if (unified != null && !unified.isDead()) {
+                    if (p == currentPage) player.showEntity(plugin, unified);
+                    else player.hideEntity(plugin, unified);
+                }
+            }
+            // Individual line entities (TextLines in unified mode have no entity so isSpawned() is false)
             for (HologramLine line : pages.get(p)) {
                 if (line.isSpawned()) {
                     String linePerm = line.getViewPermission();
@@ -313,6 +468,10 @@ public class Hologram {
         if (pages.size() <= 1 || pageIndex < 0 || pageIndex >= pages.size()) return false;
         List<HologramLine> removed = pages.remove(pageIndex);
         for (HologramLine line : removed) line.despawn();
+        if (pageIndex < unifiedDisplays.size()) {
+            TextDisplay u = unifiedDisplays.remove(pageIndex);
+            if (u != null && !u.isDead()) u.remove();
+        }
         viewerPages.replaceAll((uuid, p) -> Math.min(p, pages.size() - 1));
         if (pages.size() == 1) despawnNavEntities();
         DHolograms plugin = DHolograms.getInstance();
@@ -362,8 +521,15 @@ public class Hologram {
         int idx = page.size();
         line.setIndex(idx);
         page.add(line);
-        line.spawn(getLineLocation(pageIndex, idx));
-        showLineToEligiblePlayers(pageIndex, line);
+        if (displaySettings.isUnifiedBackground() && line instanceof TextLine tl) {
+            tl.setUnified(true);
+            rebuildUnifiedDisplay(pageIndex);
+            DHolograms plugin = DHolograms.getInstance();
+            for (Player p : plugin.getServer().getOnlinePlayers()) applyVisibilityTo(p);
+        } else {
+            line.spawn(getLineLocation(pageIndex, idx));
+            showLineToEligiblePlayers(pageIndex, line);
+        }
         updateClickEntitySize();
     }
 
@@ -371,10 +537,12 @@ public class Hologram {
         if (pageIndex < 0 || pageIndex >= pages.size()) return;
         List<HologramLine> page = pages.get(pageIndex);
         if (lineIndex < 0 || lineIndex >= page.size()) return;
+        boolean wasText = page.get(lineIndex) instanceof TextLine;
         page.get(lineIndex).despawn();
         page.remove(lineIndex);
         reindex(page, lineIndex);
         recalculatePositions(pageIndex);
+        if (displaySettings.isUnifiedBackground() && wasText) rebuildUnifiedDisplay(pageIndex);
         updateClickEntitySize();
     }
 
@@ -382,11 +550,19 @@ public class Hologram {
         if (pageIndex < 0 || pageIndex >= pages.size()) return;
         List<HologramLine> page = pages.get(pageIndex);
         if (lineIndex < 0 || lineIndex >= page.size()) return;
+        boolean oldWasText = page.get(lineIndex) instanceof TextLine;
         page.get(lineIndex).despawn();
         newLine.setIndex(lineIndex);
         page.set(lineIndex, newLine);
-        newLine.spawn(getLineLocation(pageIndex, lineIndex));
-        showLineToEligiblePlayers(pageIndex, newLine);
+        if (displaySettings.isUnifiedBackground() && (newLine instanceof TextLine || oldWasText)) {
+            if (newLine instanceof TextLine tl) tl.setUnified(true);
+            rebuildUnifiedDisplay(pageIndex);
+            DHolograms plugin = DHolograms.getInstance();
+            for (Player p : plugin.getServer().getOnlinePlayers()) applyVisibilityTo(p);
+        } else {
+            newLine.spawn(getLineLocation(pageIndex, lineIndex));
+            showLineToEligiblePlayers(pageIndex, newLine);
+        }
     }
 
     public void insertLine(int pageIndex, int lineIndex, HologramLine line) {
@@ -395,7 +571,11 @@ public class Hologram {
         int clamped = Math.max(0, Math.min(lineIndex, page.size()));
         page.add(clamped, line);
         reindex(page, clamped);
-        reloadPage(pageIndex);
+        if (displaySettings.isUnifiedBackground()) {
+            reloadUnifiedPage(pageIndex);
+        } else {
+            reloadPage(pageIndex);
+        }
         DHolograms plugin = DHolograms.getInstance();
         for (Player p : plugin.getServer().getOnlinePlayers()) applyVisibilityTo(p);
     }
@@ -415,6 +595,21 @@ public class Hologram {
         for (int i = 0; i < page.size(); i++) page.get(i).spawn(getLineLocation(pageIndex, i));
     }
 
+    private void reloadUnifiedPage(int pageIndex) {
+        List<HologramLine> page = pages.get(pageIndex);
+        for (HologramLine line : page) line.despawn();
+        if (pageIndex < unifiedDisplays.size()) {
+            TextDisplay old = unifiedDisplays.get(pageIndex);
+            if (old != null && !old.isDead()) old.remove();
+            unifiedDisplays.set(pageIndex, null);
+        }
+        for (HologramLine line : page) {
+            if (line instanceof TextLine tl) tl.setUnified(true);
+        }
+        for (int i = 0; i < page.size(); i++) page.get(i).spawn(getLineLocation(pageIndex, i));
+        spawnUnifiedDisplay(pageIndex);
+    }
+
     private void reindex(List<HologramLine> page, int fromIndex) {
         for (int i = fromIndex; i < page.size(); i++) page.get(i).setIndex(i);
     }
@@ -427,6 +622,7 @@ public class Hologram {
         page.get(a).setIndex(a);
         page.get(b).setIndex(b);
         recalculatePositions(pageIndex);
+        if (displaySettings.isUnifiedBackground()) rebuildUnifiedDisplay(pageIndex);
         return true;
     }
 

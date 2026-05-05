@@ -108,6 +108,7 @@ public class HologramManager {
             if (h.isVisibleTo(player) && h.isInUpdateRange(player)) {
                 int page = h.getViewerPage(player);
                 h.getPage(page).forEach(line -> line.update(player));
+                h.updateUnifiedDisplay(page, player);
             }
         }
     }

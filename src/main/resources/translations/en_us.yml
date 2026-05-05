@@ -56,6 +56,9 @@ display-linewidth-set: '{prefix}<green>Line width set to <aqua>{value}</aqua> pi
 display-facing-set: '{prefix}<green>Facing set to <aqua>{value}</aqua>° (0=south, 90=west, 180=north, 270=east). Effective with FIXED billboard.'
 display-downorigin-set: '{prefix}<green>Down-origin set to <aqua>{value}</aqua>.'
 display-updaterange-set: '{prefix}<green>Update range set to <aqua>{value}</aqua> blocks. PAPI placeholders only refresh within this radius.'
+display-unifiedbg-set: '{prefix}<green>Unified background set to <aqua>{value}</aqua>. All text lines now share one background panel when enabled.'
+display-opacity-set: '{prefix}<green>Background opacity set to <aqua>{value}</aqua> (0 = transparent, 255 = opaque).'
+display-opacity-no-color: '{prefix}<red>Set a background color first before changing opacity. Use <gray>/dh display <name> background #RRGGBB</gray>.'
 display-invalid-value: '{prefix}<red>Invalid value <aqua>{value}</aqua> for setting <aqua>{setting}</aqua>.'
 
 # Near command
@@ -149,11 +152,11 @@ help-commands:
   removeline: ['removeline <name> <#>', 'Remove a line.']
   insertline: ['insertline <name> <#> <content>', 'Insert a line at index.']
   lineheight: ['lineheight <name> <#> <height>', 'Set per-line height offset.']
-linexoffset: ['linexoffset <name> <#> <blocks>', 'Set per-line horizontal (X) offset.']
+  linexoffset: ['linexoffset <name> <#> <blocks>', 'Set per-line horizontal (X) offset.']
   linezoffset: ['linezoffset <name> <#> <blocks>', 'Set per-line depth (Z) offset.']
   lineanim: ['lineanim <name> <#> <rainbow|wave|burn|typewriter|scroll|none> [params]', 'Set text animation effect on a line.']
   rename: ['rename <name> <newname>', 'Rename a hologram.']
-  display: ['display <name> <setting> <value>', 'Adjust display settings (billboard/align/scale/background/shadow/range/updaterange/linewidth/facing/downorigin).']
+  display: ['display <name> <setting> <value>', 'Adjust display settings (billboard/align/scale/background/opacity/shadow/range/updaterange/linewidth/facing/downorigin/unifiedbg). background accepts #RRGGBB or #AARRGGBB.']
   show: ['show <name> <player>', 'Force-show hologram to a player.']
   hide: ['hide <name> <player>', 'Force-hide hologram from a player.']
   clone: ['clone <name> <newname>', 'Clone a hologram.']

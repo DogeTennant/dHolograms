@@ -1,5 +1,6 @@
 package com.dogetennant.dholograms.hologram.line;
 
+import com.dogetennant.dholograms.DHolograms;
 import com.dogetennant.dholograms.hologram.Hologram;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -32,6 +33,7 @@ public class EntityLine extends HologramLine {
         final Material finalMat = mat;
 
         display = location.getWorld().spawn(location, BlockDisplay.class, entity -> {
+            DHolograms.getInstance().getManagedSpawns().add(entity);
             entity.setVisibleByDefault(false);
             entity.setPersistent(false);
             entity.setGravity(false);

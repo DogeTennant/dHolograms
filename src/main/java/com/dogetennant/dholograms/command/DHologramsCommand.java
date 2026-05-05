@@ -41,7 +41,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
 
     private static final List<String> ANIM_TYPES       = List.of("rainbow", "wave", "burn", "typewriter", "scroll", "none");
     private static final List<String> CLICK_TYPES      = List.of("right", "left", "shift-right", "shift-left");
-    private static final List<String> DISPLAY_SETTINGS = List.of("billboard", "align", "scale", "background", "shadow", "range", "updaterange", "linewidth", "facing", "downorigin");
+    private static final List<String> DISPLAY_SETTINGS = List.of("billboard", "align", "scale", "background", "opacity", "shadow", "range", "updaterange", "linewidth", "facing", "downorigin", "unifiedbg");
     private static final List<String> BILLBOARDS       = List.of("FIXED", "VERTICAL", "HORIZONTAL", "CENTER");
     private static final List<String> ALIGNMENTS       = List.of("LEFT", "CENTER", "RIGHT");
 
@@ -400,6 +400,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
                 }
             }
             case "background" -> {
+                // Accepts: none/default | #RRGGBB (full opacity) | #AARRGGBB (with alpha)
                 String val = args[3];
                 if (val.equalsIgnoreCase("none") || val.equalsIgnoreCase("default")) {
                     ds.setBackgroundColor(-1);
@@ -418,6 +419,25 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
                     }
                 }
                 plugin.getLang().send(sender, "display-background-set", Map.of("value", val));
+            }
+            case "opacity" -> {
+                if (ds.getBackgroundColor() == -1) {
+                    plugin.getLang().send(sender, "display-opacity-no-color"); return;
+                }
+                try {
+                    int alpha = Integer.parseInt(args[3]);
+                    if (alpha < 0 || alpha > 255) throw new NumberFormatException();
+                    int rgb = ds.getBackgroundColor() & 0x00FFFFFF;
+                    ds.setBackgroundColor((alpha << 24) | rgb);
+                    plugin.getLang().send(sender, "display-opacity-set", Map.of("value", args[3]));
+                } catch (NumberFormatException e) {
+                    plugin.getLang().send(sender, "display-invalid-value",
+                            Map.of("value", args[3], "setting", "opacity")); return;
+                }
+            }
+            case "unifiedbg" -> {
+                ds.setUnifiedBackground(Boolean.parseBoolean(args[3]));
+                plugin.getLang().send(sender, "display-unifiedbg-set", Map.of("value", args[3]));
             }
             case "shadow" -> {
                 ds.setShadow(Boolean.parseBoolean(args[3]));

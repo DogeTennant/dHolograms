@@ -223,10 +223,10 @@ public class YmlStorage implements StorageProvider {
                         lineMap.put("anim-speed", tl.getAnimSpeed());
                     }
                 } else if (line instanceof ItemLine il) {
-                    if (il.getRotationSpeed() != 0) lineMap.put("rotation-speed", il.getRotationSpeed());
-                    if (il.getBobAmplitude() != 0) lineMap.put("bob-amplitude", il.getBobAmplitude());
+                    if (il.getRotationSpeed() != 0) lineMap.put("rotation-speed", (double) il.getRotationSpeed());
+                    if (il.getBobAmplitude() != 0) lineMap.put("bob-amplitude", (double) il.getBobAmplitude());
                 } else if (line instanceof EntityLine el && el.getRotationSpeed() != 0) {
-                    lineMap.put("rotation-speed", el.getRotationSpeed());
+                    lineMap.put("rotation-speed", (double) el.getRotationSpeed());
                 }
                 lineList.add(lineMap);
             }

@@ -1,5 +1,6 @@
 package com.dogetennant.dholograms.hologram.line;
 
+import com.dogetennant.dholograms.DHolograms;
 import com.dogetennant.dholograms.hologram.DisplaySettings;
 import com.dogetennant.dholograms.hologram.Hologram;
 import com.dogetennant.dholograms.placeholder.PAPIHook;
@@ -20,6 +21,9 @@ public class TextLine extends HologramLine {
 
     private String rawContent;
 
+    // When true, this line's entity is managed by the hologram's unified display
+    private boolean unified = false;
+
     // Animation
     private AnimationType animationType = AnimationType.NONE;
     private int animColor1 = 0xFF5555;
@@ -37,10 +41,12 @@ public class TextLine extends HologramLine {
 
     @Override
     public void spawn(Location location) {
+        if (unified) return;
         if (isSpawned()) despawn();
         DisplaySettings ds = hologram.getDisplaySettings();
 
         display = location.getWorld().spawn(location, TextDisplay.class, entity -> {
+            DHolograms.getInstance().getManagedSpawns().add(entity);
             entity.setVisibleByDefault(false);
             entity.setPersistent(false);
             entity.setGravity(false);
@@ -58,17 +64,28 @@ public class TextLine extends HologramLine {
 
     @Override
     public void tick() {
-        if (animationType == AnimationType.NONE || !isSpawned()) return;
+        if (animationType == AnimationType.NONE) return;
         animTick++;
+        if (unified || !isSpawned()) return;
         display.text(buildAnimatedComponent());
     }
 
     @Override
     public void update(Player viewer) {
-        if (!isSpawned() || animationType != AnimationType.NONE) return;
+        if (unified || !isSpawned() || animationType != AnimationType.NONE) return;
         boolean skipPAPI = hologram.hasFlag(com.dogetennant.dholograms.hologram.HologramFlag.DISABLE_PLACEHOLDERS);
         String resolved = (!skipPAPI && PAPIHook.isEnabled()) ? PAPIHook.resolve(viewer, rawContent) : rawContent;
         display.text(MsgUtil.parse(resolved));
+    }
+
+    /** Returns the current rendered component for this line — used by the unified background entity. */
+    public Component getCurrentComponent(Player player) {
+        if (animationType != AnimationType.NONE) return buildAnimatedComponent();
+        boolean skipPAPI = hologram.hasFlag(com.dogetennant.dholograms.hologram.HologramFlag.DISABLE_PLACEHOLDERS);
+        String resolved = (player != null && !skipPAPI && PAPIHook.isEnabled())
+                ? PAPIHook.resolve(player, rawContent)
+                : rawContent;
+        return MsgUtil.parse(resolved);
     }
 
     // Animation builders
@@ -227,4 +244,7 @@ public class TextLine extends HologramLine {
 
     public int getAnimSpeed() { return animSpeed; }
     public void setAnimSpeed(int s) { this.animSpeed = Math.max(1, s); }
+
+    public boolean isUnified() { return unified; }
+    public void setUnified(boolean unified) { this.unified = unified; }
 }
