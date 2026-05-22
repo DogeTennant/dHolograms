@@ -10,9 +10,15 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
+
+import java.net.URL;
+import java.util.Base64;
+import java.util.UUID;
 
 public class ItemLine extends HologramLine {
 
@@ -52,23 +58,47 @@ public class ItemLine extends HologramLine {
         });
     }
 
-    /** Builds the ItemStack from rawContent. Supports #SKULL:<player> for player heads. */
+    /** Builds the ItemStack from rawContent. Supports #SKULL:&lt;player&gt; and #SKULL:texture:&lt;base64&gt;. */
     private ItemStack buildItem() {
         if (rawContent.startsWith("#SKULL:")) {
-            return buildSkull(rawContent.substring(7).trim());
+            String arg = rawContent.substring(7).trim();
+            if (arg.startsWith("texture:")) {
+                return buildSkullFromTexture(arg.substring(8).trim());
+            }
+            return buildSkullByName(arg);
         }
         Material mat = Material.matchMaterial(rawContent);
         if (mat == null) mat = Material.STONE;
         return new ItemStack(mat);
     }
 
-    private ItemStack buildSkull(String playerName) {
+    private ItemStack buildSkullByName(String playerName) {
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) skull.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(Bukkit.getOfflinePlayer(playerName));
             skull.setItemMeta(meta);
         }
+        return skull;
+    }
+
+    private ItemStack buildSkullFromTexture(String base64) {
+        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) skull.getItemMeta();
+        if (meta == null) return skull;
+        try {
+            String json = new String(Base64.getDecoder().decode(base64));
+            int urlStart = json.indexOf("\"url\":\"") + 7;
+            int urlEnd = json.indexOf("\"", urlStart);
+            if (urlStart > 6 && urlEnd > urlStart) {
+                PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID());
+                PlayerTextures textures = profile.getTextures();
+                textures.setSkin(new URL(json.substring(urlStart, urlEnd)));
+                profile.setTextures(textures);
+                meta.setOwnerProfile(profile);
+            }
+        } catch (Exception ignored) {}
+        skull.setItemMeta(meta);
         return skull;
     }
 
