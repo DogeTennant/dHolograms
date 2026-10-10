@@ -1,11 +1,15 @@
 package com.dogetennant.dholograms.command;
 
 import com.dogetennant.dholograms.DHolograms;
+import com.dogetennant.dholograms.hologram.Backgrounds;
 import com.dogetennant.dholograms.hologram.DisplaySettings;
 import com.dogetennant.dholograms.hologram.Hologram;
 import com.dogetennant.dholograms.hologram.HologramFlag;
+import com.dogetennant.dholograms.hologram.HologramManager;
 import com.dogetennant.dholograms.hologram.line.*;
+import com.dogetennant.dholograms.importer.DecentHologramsImporter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -36,7 +40,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
             "rename", "display", "show", "hide", "clone", "near",
             "tag", "page", "click", "linerotation",
             "disable", "enable", "swaplines", "linepermission",
-            "center", "lineinfo", "flag", "reload", "language", "help"
+            "center", "lineinfo", "flag", "import", "reload", "language", "help"
     );
 
     private static final List<String> ANIM_TYPES       = List.of("rainbow", "wave", "burn", "typewriter", "scroll", "none");
@@ -56,11 +60,12 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                              @NotNull String label, @NotNull String[] args) {
+        // first, so not even the help (a bare /dh) shows without the permission
+        if (!sender.hasPermission(PERM_ADMIN)) { plugin.getLang().send(sender, "no-permission"); return true; }
         if (args.length == 0) { cmdHelp(sender, args); return true; }
 
         String sub = args[0].toLowerCase(Locale.ROOT);
 
-        if (!sender.hasPermission(PERM_ADMIN)) { plugin.getLang().send(sender, "no-permission"); return true; }
         if (PLAYER_ONLY.contains(sub) && !(sender instanceof Player)) {
             plugin.getLang().send(sender, "player-only"); return true;
         }
@@ -97,6 +102,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
             case "center"         -> cmdCenter(sender, args);
             case "lineinfo"       -> cmdLineInfo(sender, args);
             case "flag"           -> cmdFlag(sender, args);
+            case "import"         -> cmdImport(sender, args);
             case "reload"         -> cmdReload(sender, args);
             case "language"       -> cmdLanguage(sender, args);
             case "help"           -> cmdHelp(sender, args);
@@ -108,15 +114,15 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
                                       @NotNull String label, @NotNull String[] args) {
+        // nothing at all without the permission: no subcommands, no hologram names
+        if (!sender.hasPermission(PERM_ADMIN)) return List.of();
         if (args.length == 1) {
-            if (!sender.hasPermission(PERM_ADMIN)) return List.of();
-        return ALL_SUBS.stream()
-                    .filter(s -> s.startsWith(args[0].toLowerCase()))
+            return ALL_SUBS.stream()
+                    .filter(s -> s.startsWith(args[0].toLowerCase(Locale.ROOT)))
                     .collect(Collectors.toList());
         }
 
         String sub = args[0].toLowerCase(Locale.ROOT);
-        if (!sender.hasPermission(PERM_ADMIN)) return List.of();
 
         return switch (sub) {
             case "delete", "info", "move", "tp", "addline",
@@ -135,6 +141,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
             case "click"                           -> tabClick(args);
             case "flag"                            -> tabFlag(args);
             case "language"                        -> tabLanguage(args);
+            case "import"                          -> args.length == 2 ? List.of("decentholograms") : List.of();
             default                                -> List.of();
         };
     }
@@ -400,35 +407,27 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
                 }
             }
             case "background" -> {
-                // Accepts: none/default | #RRGGBB (full opacity) | #AARRGGBB (with alpha)
+                // none (no box - water and glass stay visible behind it) | default (the server's
+                // holograms.default-background) | game (the game's box) | #RRGGBB | #AARRGGBB.
+                // "none" used to mean the game's box, the one that hides water behind it.
                 String val = args[3];
-                if (val.equalsIgnoreCase("none") || val.equalsIgnoreCase("default")) {
-                    ds.setBackgroundColor(-1);
-                } else {
-                    try {
-                        String hex = val.startsWith("#") ? val.substring(1) : val;
-                        if (hex.length() == 6) hex = "FF" + hex;
-                        if (hex.length() != 8) {
-                            plugin.getLang().send(sender, "display-invalid-value",
-                                    Map.of("value", val, "setting", "background")); return;
-                        }
-                        ds.setBackgroundColor((int) Long.parseLong(hex, 16));
-                    } catch (NumberFormatException e) {
-                        plugin.getLang().send(sender, "display-invalid-value",
-                                Map.of("value", val, "setting", "background")); return;
-                    }
+                Integer background = Backgrounds.parse(val);
+                if (background == null) {
+                    plugin.getLang().send(sender, "display-invalid-value",
+                            Map.of("value", val, "setting", "background")); return;
                 }
+                ds.setBackgroundColor(background);
                 plugin.getLang().send(sender, "display-background-set", Map.of("value", val));
             }
             case "opacity" -> {
-                if (ds.getBackgroundColor() == -1) {
+                if (ds.getBackgroundColor() == Backgrounds.DEFAULT || ds.getBackgroundColor() == Backgrounds.GAME) {
                     plugin.getLang().send(sender, "display-opacity-no-color"); return;
                 }
                 try {
                     int alpha = Integer.parseInt(args[3]);
                     if (alpha < 0 || alpha > 255) throw new NumberFormatException();
                     int rgb = ds.getBackgroundColor() & 0x00FFFFFF;
-                    ds.setBackgroundColor((alpha << 24) | rgb);
+                    ds.setBackgroundColor(Backgrounds.normalise((alpha << 24) | rgb));
                     plugin.getLang().send(sender, "display-opacity-set", Map.of("value", args[3]));
                 } catch (NumberFormatException e) {
                     plugin.getLang().send(sender, "display-invalid-value",
@@ -899,8 +898,45 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    /** Lines of an import's report shown in chat; all of them go to the console. */
+    private static final int IMPORT_DETAILS_SHOWN = 8;
+
+    private void cmdImport(CommandSender sender, String[] args) {
+        if (args.length < 2 || !args[1].equalsIgnoreCase("decentholograms")) {
+            usage(sender, "/dh import decentholograms"); return;
+        }
+        File folder = new File(plugin.getDataFolder().getParentFile(), "DecentHolograms");
+        HologramManager manager = plugin.getHologramManager();
+        DecentHologramsImporter.Report report = DecentHologramsImporter.importFolder(folder, manager::exists, manager::addHologram);
+        if (report == null) {
+            plugin.getLang().send(sender, "import-no-folder", Map.of("folder", "plugins/DecentHolograms/holograms")); return;
+        }
+        List<String> details = new ArrayList<>();
+        for (String skipped : report.skipped()) details.add("skipped " + skipped);
+        details.addAll(report.warnings());
+        for (String name : report.imported()) plugin.getLogger().info("DecentHolograms import: imported " + name);
+        for (String detail : details) plugin.getLogger().warning("DecentHolograms import: " + detail);
+        plugin.getLang().send(sender, "import-done", Map.of(
+                "imported", String.valueOf(report.imported().size()),
+                "skipped", String.valueOf(report.skipped().size()),
+                "warnings", String.valueOf(report.warnings().size())));
+        if (sender instanceof Player) {      // the console has them all already
+            for (String detail : details.subList(0, Math.min(IMPORT_DETAILS_SHOWN, details.size()))) {
+                plugin.getLang().send(sender, "import-detail", Map.of("entry", MiniMessage.miniMessage().escapeTags(detail)));
+            }
+            if (details.size() > IMPORT_DETAILS_SHOWN) {
+                plugin.getLang().send(sender, "import-more", Map.of("count", String.valueOf(details.size() - IMPORT_DETAILS_SHOWN)));
+            }
+        }
+        if (report.displays() > 0) {
+            plugin.getLang().send(sender, "import-displays", Map.of("count", String.valueOf(report.displays())));
+        }
+        if (!report.imported().isEmpty()) plugin.getLang().send(sender, "import-remove-decent");
+    }
+
     private void cmdReload(CommandSender sender, String[] args) {
         plugin.reloadConfig();
+        Backgrounds.configure(plugin.getConfig().getString("holograms.default-background", "none"), plugin.getLogger());
         plugin.getLang().load(plugin.getConfig().getString("language", "en_us"));
         plugin.getHologramManager().respawnAll();
         plugin.getLang().send(sender, "reload-success");
@@ -920,8 +956,14 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
     private void cmdHelp(CommandSender sender, String[] args) {
         int page = 1;
         if (args.length >= 2) { try { page = Integer.parseInt(args[1]); } catch (NumberFormatException ignored) {} }
+        // the server's language file, then commands added after it was written (from the jar's file)
+        Set<String> helpKeys = new LinkedHashSet<>();
         ConfigurationSection helpCmds = plugin.getLang().getConfig().getConfigurationSection("help-commands");
-        List<String> keys = helpCmds != null ? new ArrayList<>(helpCmds.getKeys(false)) : List.of();
+        if (helpCmds != null) helpKeys.addAll(helpCmds.getKeys(false));
+        org.bukkit.configuration.Configuration defaults = plugin.getLang().getConfig().getDefaults();
+        ConfigurationSection defaultCmds = defaults != null ? defaults.getConfigurationSection("help-commands") : null;
+        if (defaultCmds != null) helpKeys.addAll(defaultCmds.getKeys(false));
+        List<String> keys = new ArrayList<>(helpKeys);
         int total = Math.max(1, (int) Math.ceil((double) keys.size() / HELP_PAGE_SIZE));
         page = Math.max(1, Math.min(page, total));
         sender.sendMessage(plugin.getLang().get("help-header",
@@ -1010,7 +1052,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
             case "billboard"   -> BILLBOARDS.stream().filter(s -> s.startsWith(args[3].toUpperCase())).collect(Collectors.toList());
             case "align"       -> ALIGNMENTS.stream().filter(s -> s.startsWith(args[3].toUpperCase())).collect(Collectors.toList());
             case "shadow", "downorigin" -> List.of("true", "false");
-            case "background"  -> List.of("none", "#FF0000", "#00FF00", "#0000FF");
+            case "background"  -> List.of("none", "default", "game", "#80000000", "#FF0000");
             case "linewidth"   -> List.of("200", "400", "600", "1000");
             case "facing"      -> List.of("0", "90", "180", "270");
             case "updaterange" -> List.of("16", "32", "48", "64");

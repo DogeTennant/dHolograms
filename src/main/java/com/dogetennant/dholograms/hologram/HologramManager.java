@@ -59,6 +59,20 @@ public class HologramManager {
         return hologram;
     }
 
+    /**
+     * Adds a hologram built elsewhere (an import): registered, saved and shown like a loaded one.
+     * False when one of that name exists already.
+     */
+    public boolean addHologram(Hologram hologram) {
+        String key = hologram.getName().toLowerCase(Locale.ROOT);
+        if (holograms.containsKey(key)) return false;
+        holograms.put(key, hologram);
+        storage.save(hologram);
+        hologram.spawn();
+        for (Player p : plugin.getServer().getOnlinePlayers()) hologram.applyVisibilityTo(p);
+        return true;
+    }
+
     public boolean renameHologram(String oldName, String newName) {
         Hologram h = holograms.remove(oldName.toLowerCase(Locale.ROOT));
         if (h == null) return false;

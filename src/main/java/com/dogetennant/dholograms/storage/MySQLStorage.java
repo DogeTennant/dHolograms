@@ -24,10 +24,12 @@ public class MySQLStorage implements StorageProvider {
     private static final String FRAMES_DELIMITER = "|||";
 
     private final DHolograms plugin;
+    private final SaveQueue queue;
     private HikariDataSource dataSource;
 
     public MySQLStorage(DHolograms plugin) {
         this.plugin = plugin;
+        this.queue = new SaveQueue(plugin.getLogger());
     }
 
     @Override
@@ -116,6 +118,7 @@ public class MySQLStorage implements StorageProvider {
 
     @Override
     public void close() {
+        queue.close(30, java.util.concurrent.TimeUnit.SECONDS);
         if (dataSource != null && !dataSource.isClosed()) dataSource.close();
     }
 
@@ -219,20 +222,93 @@ public class MySQLStorage implements StorageProvider {
         }
     }
 
+    /**
+     * One hologram as table rows, taken on the server thread: the save thread never reads a
+     * hologram while a command is changing it.
+     */
+    private record Snapshot(String name, Object[] hologram, List<Object[]> lines) {}
+
     @Override
     public void save(Hologram hologram) {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try (Connection conn = dataSource.getConnection()) {
-                int hologramId = upsertHologram(conn, hologram);
-                deleteLines(conn, hologramId);
-                insertLines(conn, hologramId, hologram);
-            } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to save hologram '" + hologram.getName() + "'", e);
-            }
-        });
+        Snapshot snapshot = snapshot(hologram);
+        queue.submit(() -> write(snapshot));
     }
 
-    private int upsertHologram(Connection conn, Hologram hologram) throws SQLException {
+    private Snapshot snapshot(Hologram hologram) {
+        Location loc = hologram.getLocation();
+        java.util.Map<String, String> ca = hologram.getClickActions();
+        String flagsStr = hologram.getFlags().stream()
+                .map(HologramFlag::name)
+                .collect(java.util.stream.Collectors.joining(","));
+        Object[] row = {
+                hologram.getName(),
+                loc.getWorld() != null ? loc.getWorld().getName() : "world",
+                loc.getX(), loc.getY(), loc.getZ(),
+                hologram.getViewPermission(),
+                hologram.getTag(),
+                hologram.getRefreshTicks(),
+                hologram.getDisplaySettings().serialize(),
+                ca.get("RIGHT"), ca.get("LEFT"), ca.get("SHIFT_RIGHT"), ca.get("SHIFT_LEFT"),
+                hologram.isDisabled(),
+                flagsStr.isEmpty() ? null : flagsStr
+        };
+        List<Object[]> lines = new ArrayList<>();
+        for (int p = 0; p < hologram.getPageCount(); p++) {
+            List<HologramLine> page = hologram.getPage(p);
+            for (int i = 0; i < page.size(); i++) {
+                HologramLine line = page.get(i);
+                float rotSpeed = line instanceof ItemLine il ? il.getRotationSpeed()
+                        : line instanceof EntityLine el ? el.getRotationSpeed() : 0;
+                float bobAmp = line instanceof ItemLine il2 ? il2.getBobAmplitude() : 0;
+                TextLine text = line instanceof TextLine tl ? tl : null;
+                String vp = line.getViewPermission();
+                lines.add(new Object[] {
+                        p, i, line.getType().name(), line.getRawContent(), line.getHeightOffset(),
+                        rotSpeed, bobAmp, line.getXOffset(), line.getZOffset(),
+                        text != null ? text.getAnimationType().name() : "NONE",
+                        text != null ? text.getAnimColor1() : 0xFF5555,
+                        text != null ? text.getAnimColor2() : 0x5555FF,
+                        text != null ? text.getAnimSpeed() : 2,
+                        vp != null && !vp.isEmpty() ? vp : null
+                });
+            }
+        }
+        return new Snapshot(hologram.getName(), row, lines);
+    }
+
+    /**
+     * The hologram row and all its lines in one transaction. The lines are deleted and written
+     * again, and a save that failed after the delete used to leave half a hologram (or none).
+     */
+    private void write(Snapshot snapshot) {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                int hologramId = upsertHologram(conn, snapshot);
+                deleteLines(conn, hologramId);
+                insertLines(conn, hologramId, snapshot);
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to save hologram '" + snapshot.name()
+                    + "' - the stored one is unchanged", e);
+        }
+    }
+
+    /** Binds values from parameter {@code first} on; a null is bound as a NULL string. */
+    private static void bind(PreparedStatement ps, int first, Object[] values) throws SQLException {
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == null) ps.setNull(first + i, Types.VARCHAR);
+            else ps.setObject(first + i, values[i]);
+        }
+    }
+
+    private int upsertHologram(Connection conn, Snapshot snapshot) throws SQLException {
         String sql = """
                 INSERT INTO dh_holograms (name, world, x, y, z, view_permission, tag, refresh_ticks, display_settings,
                   click_right, click_left, click_shift_right, click_shift_left, disabled, flags)
@@ -245,27 +321,8 @@ public class MySQLStorage implements StorageProvider {
                   click_shift_right=VALUES(click_shift_right), click_shift_left=VALUES(click_shift_left),
                   disabled=VALUES(disabled), flags=VALUES(flags)
                 """;
-        Location loc = hologram.getLocation();
-        java.util.Map<String, String> ca = hologram.getClickActions();
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, hologram.getName());
-            ps.setString(2, loc.getWorld() != null ? loc.getWorld().getName() : "world");
-            ps.setDouble(3, loc.getX());
-            ps.setDouble(4, loc.getY());
-            ps.setDouble(5, loc.getZ());
-            ps.setString(6, hologram.getViewPermission());
-            ps.setString(7, hologram.getTag());
-            ps.setInt(8, hologram.getRefreshTicks());
-            ps.setString(9, hologram.getDisplaySettings().serialize());
-            ps.setString(10, ca.get("RIGHT"));
-            ps.setString(11, ca.get("LEFT"));
-            ps.setString(12, ca.get("SHIFT_RIGHT"));
-            ps.setString(13, ca.get("SHIFT_LEFT"));
-            ps.setBoolean(14, hologram.isDisabled());
-            String flagsStr = hologram.getFlags().stream()
-                    .map(HologramFlag::name)
-                    .collect(java.util.stream.Collectors.joining(","));
-            ps.setString(15, flagsStr.isEmpty() ? null : flagsStr);
+            bind(ps, 1, snapshot.hologram());
             ps.executeUpdate();
 
             try (ResultSet keys = ps.getGeneratedKeys()) {
@@ -274,12 +331,12 @@ public class MySQLStorage implements StorageProvider {
         }
         // Fetch existing id if upsert didn't generate a new one
         try (PreparedStatement ps = conn.prepareStatement("SELECT id FROM dh_holograms WHERE name = ?")) {
-            ps.setString(1, hologram.getName());
+            ps.setString(1, snapshot.name());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt("id");
             }
         }
-        throw new SQLException("Could not determine hologram id for: " + hologram.getName());
+        throw new SQLException("Could not determine hologram id for: " + snapshot.name());
     }
 
     private void loadClickActions(Hologram hologram, ResultSet rs) throws SQLException {
@@ -310,42 +367,13 @@ public class MySQLStorage implements StorageProvider {
         }
     }
 
-    private void insertLines(Connection conn, int hologramId, Hologram hologram) throws SQLException {
+    private void insertLines(Connection conn, int hologramId, Snapshot snapshot) throws SQLException {
         String sql = "INSERT INTO dh_lines (hologram_id, page_index, line_index, type, content, height_offset, rotation_speed, bob_amplitude, x_offset, z_offset, anim_type, anim_color1, anim_color2, anim_speed, view_permission) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            for (int p = 0; p < hologram.getPageCount(); p++) {
-                List<HologramLine> page = hologram.getPage(p);
-                for (int i = 0; i < page.size(); i++) {
-                    HologramLine line = page.get(i);
-                    ps.setInt(1, hologramId);
-                    ps.setInt(2, p);
-                    ps.setInt(3, i);
-                    ps.setString(4, line.getType().name());
-                    ps.setString(5, line.getRawContent());
-                    ps.setDouble(6, line.getHeightOffset());
-                    float rotSpeed = line instanceof ItemLine il ? il.getRotationSpeed()
-                            : line instanceof EntityLine el ? el.getRotationSpeed() : 0;
-                    ps.setFloat(7, rotSpeed);
-                    float bobAmp = line instanceof ItemLine il2 ? il2.getBobAmplitude() : 0;
-                    ps.setFloat(8, bobAmp);
-                    ps.setDouble(9, line.getXOffset());
-                    ps.setDouble(10, line.getZOffset());
-                    if (line instanceof TextLine tl2) {
-                        ps.setString(11, tl2.getAnimationType().name());
-                        ps.setInt(12, tl2.getAnimColor1());
-                        ps.setInt(13, tl2.getAnimColor2());
-                        ps.setInt(14, tl2.getAnimSpeed());
-                    } else {
-                        ps.setString(11, "NONE");
-                        ps.setInt(12, 0xFF5555);
-                        ps.setInt(13, 0x5555FF);
-                        ps.setInt(14, 2);
-                    }
-                    String vp = line.getViewPermission();
-                    if (vp != null && !vp.isEmpty()) ps.setString(15, vp);
-                    else ps.setNull(15, Types.VARCHAR);
-                    ps.addBatch();
-                }
+            for (Object[] line : snapshot.lines()) {
+                ps.setInt(1, hologramId);
+                bind(ps, 2, line);
+                ps.addBatch();
             }
             ps.executeBatch();
         }
@@ -353,7 +381,7 @@ public class MySQLStorage implements StorageProvider {
 
     @Override
     public void delete(String name) {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+        queue.submit(() -> {
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement ps = conn.prepareStatement("DELETE FROM dh_holograms WHERE name = ?")) {
                 ps.setString(1, name);

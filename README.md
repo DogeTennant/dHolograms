@@ -22,6 +22,7 @@ No armor stands. No fake players. No packet hacks. dHolograms uses the native `T
 - **Multi-language** - ships with `en_us` and `cs_cz`; drop in your own `.yml` translation file
 - **Developer API** - clean `DHologramsAPI` class for other plugins to create, query, and delete holograms
 - **Full tab-completion** - every argument of every subcommand is tab-completed
+- **DecentHolograms import** - `/dh import decentholograms` copies its holograms, pages, items and click actions over
 
 ---
 
@@ -83,6 +84,13 @@ holograms:
   # Anti-spam cooldown between click-action executions per player (ticks).
   # Set to 0 to disable.
   click-cooldown-ticks: 10
+
+  # Background of holograms set to "default" (every hologram you did not give one):
+  #   none - no box. Water, glass and ice behind a hologram stay visible; any box
+  #          hides them, a limit of how the game draws text displays.
+  #   game - the game's own grey box (follows each player's text background opacity).
+  #   #AARRGGBB / #RRGGBB - a colour, e.g. "#80000000" for a half-transparent black box.
+  default-background: none
 ```
 
 ---
@@ -117,6 +125,7 @@ The base command is `/dholograms` (alias `/dh`). All subcommands require `dholog
 | `/dh center <name>` | Snap hologram X/Z to the center of its current block |
 | `/dh disable <name>` | Hide the hologram from all players without deleting it |
 | `/dh enable <name>` | Re-enable a disabled hologram |
+| `/dh import decentholograms` | Copy every DecentHolograms hologram into dHolograms (see [Migrating from DecentHolograms](#migrating-from-decentholograms)) |
 | `/dh reload` | Reload config, language, and respawn all holograms |
 | `/dh language <code>` | Switch language at runtime |
 | `/dh help [page]` | Show paginated command help |
@@ -180,7 +189,7 @@ Holograms start with one page. Adding a second page automatically spawns interac
 | `billboard` | `FIXED` `VERTICAL` `HORIZONTAL` `CENTER` | How the display rotates to face the player. `CENTER` (default) always faces the viewer. |
 | `align` | `LEFT` `CENTER` `RIGHT` | Text alignment within the display box |
 | `scale` | `<x> <y> <z>` | Scale the display entity (e.g. `2.0 2.0 2.0` for double size) |
-| `background` | `#AARRGGBB` or `none` | Background panel color in hex ARGB; `none` for no panel |
+| `background` | `none` `default` `game` `#RRGGBB` `#AARRGGBB` | `none`: no panel - water, glass and ice behind the hologram stay visible (any panel hides them, a limit of how the game draws text displays). `default`: `holograms.default-background` (`none` unless changed). `game`: the game's own grey panel. A colour: that panel, e.g. `#80000000` |
 | `shadow` | `true` `false` | Text drop shadow |
 | `range` | `<blocks>` | View distance - hologram is hidden beyond this range |
 | `updaterange` | `<blocks>` or `-1` | Distance within which PAPI/content updates are pushed. `-1` = same as `range` |
@@ -224,6 +233,35 @@ Flags disable specific subsystems on a per-hologram basis.
 | `DISABLE_PLACEHOLDERS` | Evaluate PAPI placeholders as literal strings |
 | `DISABLE_ANIMATIONS` | Freeze all text animations |
 | `DISABLE_ACTIONS` | Ignore all click interactions |
+
+## Migrating from DecentHolograms
+
+```
+/dh import decentholograms
+```
+
+Reads `plugins/DecentHolograms/holograms/*.yml` (DecentHolograms does not have to be installed) and
+adds every hologram under its DecentHolograms name. Names dHolograms already has are skipped, so
+running it again adds only what is new. Afterwards remove DecentHolograms, or both plugins show the
+same holograms.
+
+| DecentHolograms | dHolograms |
+|---|---|
+| Text with `&` codes, `&#RRGGBB`, `{#RRGGBB}`, `<#AAAAAA>gradients</#BBBBBB>`, `<RAINBOW1>` | The same text in MiniMessage colours |
+| `#ICON:` | A turning, floating item line |
+| `#HEAD:` / `#SMALLHEAD:` with a player name or skin texture | A player head item line |
+| Line heights, down-origin, x/z offsets | Every line in the same place (as line offsets) |
+| Pages | Pages |
+| Click actions (`COMMAND`, `CONSOLE`, `MESSAGE`, `SOUND`, `TELEPORT`, `CONNECT`, `PERMISSION`, page actions) | Click actions - one set per hologram (the first page's) |
+| `typewriter`, `wave`, `burn`, `scroll` animations | The same animations |
+| `{player}`, `{online}`, `{max_online}` | `%player_name%`, `%server_online%`, `%server_max_players%` (PlaceholderAPI with its Player and Server expansions) |
+| Permission, display and update range, update interval, facing, flags, disabled | The same |
+| Custom replacements from its `config.yml` (`[x]` and the like) | Applied to the text |
+
+Not imported, each named in the report: mob lines (`#ENTITY:`), other animations, item NBT,
+HeadDatabase and per-player heads, and DecentHolograms 2.10 displays
+(`plugins/DecentHolograms/displays`, a different format; only counted). The report's first lines are
+shown in chat; all of it is in the server console.
 
 ---
 
@@ -373,11 +411,11 @@ softdepend:
 
 ### YML (default)
 
-Holograms are stored in `plugins/dHolograms/holograms/` - one `.yml` file per hologram. Zero setup required.
+Holograms are stored in `plugins/dHolograms/holograms.yml`. Zero setup required. Every change is written by one save thread in order, through a temporary file, and a stop waits for pending saves.
 
 ### MySQL
 
-Set `storage.type: mysql` in `config.yml` and fill in the connection details. dHolograms uses HikariCP for connection pooling and auto-reconnect. The table is created automatically on first start.
+Set `storage.type: mysql` in `config.yml` and fill in the connection details. dHolograms uses HikariCP for connection pooling and auto-reconnect. The table is created automatically on first start. A hologram and its lines are saved in one transaction, in order: a save that fails leaves the stored hologram as it was.
 
 ---
 

@@ -26,3 +26,10 @@ holograms:
   default-line-height: 0.3
   # Minimum ticks between click-action executions per player (0 = no cooldown).
   click-cooldown-ticks: 10
+
+  # Background of holograms set to "default" (every hologram you did not give one):
+  #   none - no box. Water, glass and ice behind a hologram stay visible; any box
+  #          hides them, a limit of how the game draws text displays.
+  #   game - the game's own grey box (follows each player's text background opacity).
+  #   #AARRGGBB / #RRGGBB - a colour, e.g. "#80000000" for a half-transparent black box.
+  default-background: none

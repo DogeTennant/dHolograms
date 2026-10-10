@@ -125,6 +125,14 @@ linerotation-not-applicable: '{prefix}<red>Řádek <aqua>{index}</aqua> není it
 hologram-shown: '{prefix}<green>Hologram <aqua>{name}</aqua> je nyní zobrazen hráči <aqua>{player}</aqua>.'
 hologram-hidden: '{prefix}<green>Hologram <aqua>{name}</aqua> je nyní skryt před hráčem <aqua>{player}</aqua>.'
 
+# Import z DecentHolograms
+import-no-folder: '{prefix}<red>Ve složce <gray>{folder}</gray> nejsou žádné hologramy DecentHolograms.'
+import-done: '{prefix}<green>Import z DecentHolograms: importováno <aqua>{imported}</aqua>, přeskočeno <aqua>{skipped}</aqua>, upozornění <aqua>{warnings}</aqua>. Vše je v konzoli serveru.'
+import-detail: '{prefix}<gray>{entry}'
+import-more: '{prefix}<gray>... a dalších {count} v konzoli serveru.'
+import-displays: '{prefix}<yellow>Displeje DecentHolograms ve složce plugins/DecentHolograms/displays ({count}) nebyly importovány: importují se jen klasické hologramy.'
+import-remove-decent: '{prefix}<yellow>Teď odeberte DecentHolograms (nebo jeho hologramy), jinak oba pluginy ukážou stejné hologramy.'
+
 # Konfigurace / reload
 reload-success: '{prefix}<green>Konfigurace a jazykové soubory byly znovu načteny.'
 language-changed: '{prefix}<green>Jazyk změněn na <aqua>{code}</aqua>.'
@@ -147,7 +155,7 @@ help-commands:
   insertline: ['insertline <název> <#> <obsah>', 'Vloží řádek na daný index.']
   lineheight: ['lineheight <název> <#> <výška>', 'Nastaví výšku konkrétního řádku.']
 linexoffset: ['linexoffset <název> <#> <bloky>', 'Nastaví horizontální posun konkrétního řádku.']
-  display: ['display <název> <nastavení> <hodnota>', 'Upraví nastavení zobrazení (billboard/align/scale/background/shadow/range/updaterange/linewidth/facing/downorigin).']
+  display: ['display <název> <nastavení> <hodnota>', 'Upraví nastavení zobrazení (billboard/align/scale/background/shadow/range/updaterange/linewidth/facing/downorigin). background: none (bez pozadí, voda a sklo zůstanou vidět), default, game (pozadí hry), #RRGGBB nebo #AARRGGBB.']
   show: ['show <název> <hráč>', 'Zobrazí hologram konkrétnímu hráči.']
   hide: ['hide <název> <hráč>', 'Skryje hologram před konkrétním hráčem.']
   clone: ['clone <název> <novýnázev>', 'Naklonuje hologram.']
@@ -163,5 +171,6 @@ linexoffset: ['linexoffset <název> <#> <bloky>', 'Nastaví horizontální posun
   center: ['center <název>', 'Vystředí hologram na střed bloku.']
   lineinfo: ['lineinfo <název> <#>', 'Zobrazí detaily konkrétního řádku.']
   flag: ['flag <název> add|remove|list [příznak]', 'Spravuje příznaky hologramu (DISABLE_UPDATING/PLACEHOLDERS/ANIMATIONS/ACTIONS).']
+  import: ['import decentholograms', 'Zkopíruje hologramy z DecentHolograms (plugins/DecentHolograms) do dHolograms. Názvy, které už existují, se přeskočí.']
   reload: ['reload', 'Znovu načte konfiguraci a jazykové soubory.']
   language: ['language <kód>', 'Přepne jazyk za běhu.']

@@ -40,6 +40,8 @@ public class DHolograms extends JavaPlugin {
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
+        com.dogetennant.dholograms.hologram.Backgrounds.configure(
+                getConfig().getString("holograms.default-background", "none"), getLogger());
 
         // Language
         lang = new LangManager(this);

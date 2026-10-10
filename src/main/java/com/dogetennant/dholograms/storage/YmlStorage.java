@@ -20,11 +20,13 @@ import java.util.logging.Level;
 public class YmlStorage implements StorageProvider {
 
     private final DHolograms plugin;
+    private final SaveQueue queue;
     private File file;
     private YamlConfiguration config;
 
     public YmlStorage(DHolograms plugin) {
         this.plugin = plugin;
+        this.queue = new SaveQueue(plugin.getLogger());
     }
 
     @Override
@@ -37,8 +39,11 @@ public class YmlStorage implements StorageProvider {
         config = YamlConfiguration.loadConfiguration(file);
     }
 
+    /** Waits for the writes still queued, so a change made just before a stop is on disk. */
     @Override
-    public void close() {}
+    public void close() {
+        queue.close(30, java.util.concurrent.TimeUnit.SECONDS);
+    }
 
     @Override
     public List<Hologram> loadAll() {
@@ -244,10 +249,29 @@ public class YmlStorage implements StorageProvider {
         saveAsync();
     }
 
+    /**
+     * Writes the file as it is now. The text is made here, on the server thread, and written by
+     * the one save thread in order: each save used to write the live config from its own async
+     * task, so two saves (a rename is a delete and a save) could write the file at the same time
+     * or read the config while it was being changed - and a broken file loads as no holograms.
+     * Written to a temporary file first and moved over, so a crash cannot leave half a file.
+     */
     private void saveAsync() {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try { config.save(file); }
-            catch (IOException e) { plugin.getLogger().log(Level.SEVERE, "Failed to save holograms.yml", e); }
+        String text = config.saveToString();
+        java.nio.file.Path target = file.toPath();
+        queue.submit(() -> {
+            java.nio.file.Path temp = target.resolveSibling(target.getFileName() + ".tmp");
+            try {
+                java.nio.file.Files.writeString(temp, text, java.nio.charset.StandardCharsets.UTF_8);
+                try {
+                    java.nio.file.Files.move(temp, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                            java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                    java.nio.file.Files.move(temp, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to save holograms.yml", e);
+            }
         });
     }
 

@@ -10,8 +10,8 @@ public class DisplaySettings {
     private float scaleX = 1.0f;
     private float scaleY = 1.0f;
     private float scaleZ = 1.0f;
-    // Stored as ARGB int; -1 = use client default (no override)
-    private int backgroundColor = -1;
+    // See Backgrounds: -1 = holograms.default-background, 0 = none, 1 = the game's box, else ARGB
+    private int backgroundColor = Backgrounds.DEFAULT;
     private boolean shadow = false;
     private double range = 64.0;
     // -1 = same as display range (no separate update radius)

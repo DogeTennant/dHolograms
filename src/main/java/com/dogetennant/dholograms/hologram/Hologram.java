@@ -5,7 +5,6 @@ import com.dogetennant.dholograms.hologram.line.HologramLine;
 import com.dogetennant.dholograms.hologram.line.TextLine;
 import com.dogetennant.dholograms.hologram.line.AnimationType;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Interaction;
@@ -228,13 +227,7 @@ public class Hologram {
     }
 
     private void applyUnifiedBackground(TextDisplay entity, int argb) {
-        if (argb == -1) {
-            entity.setDefaultBackground(true);
-        } else {
-            entity.setDefaultBackground(false);
-            entity.setBackgroundColor(Color.fromARGB(
-                    (argb >> 24) & 0xFF, (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF));
-        }
+        Backgrounds.apply(entity, argb);
     }
 
     private void applyUnifiedScale(TextDisplay entity, DisplaySettings ds) {
@@ -254,6 +247,7 @@ public class Hologram {
         navDisplay = navLoc.getWorld().spawn(navLoc, TextDisplay.class, d -> {
             DHolograms.getInstance().getManagedSpawns().add(d);
             d.text(Component.text("◀  ▶"));
+            Backgrounds.apply(d, Backgrounds.DEFAULT);     // like the holograms: no box by default
             d.setVisibleByDefault(false);
             d.setPersistent(false);
             d.setGravity(false);

@@ -131,6 +131,14 @@ linerotation-not-applicable: '{prefix}<red>Line <aqua>{index}</aqua> is not an i
 hologram-shown: '{prefix}<green>Hologram <aqua>{name}</aqua> is now shown to <aqua>{player}</aqua>.'
 hologram-hidden: '{prefix}<green>Hologram <aqua>{name}</aqua> is now hidden from <aqua>{player}</aqua>.'
 
+# DecentHolograms import
+import-no-folder: '{prefix}<red>No DecentHolograms holograms found in <gray>{folder}</gray>.'
+import-done: '{prefix}<green>DecentHolograms import: <aqua>{imported}</aqua> imported, <aqua>{skipped}</aqua> skipped, <aqua>{warnings}</aqua> warning(s). All of it is in the server console.'
+import-detail: '{prefix}<gray>{entry}'
+import-more: '{prefix}<gray>... and {count} more in the server console.'
+import-displays: '{prefix}<yellow>{count} DecentHolograms display(s) in plugins/DecentHolograms/displays were not imported: only classic holograms are.'
+import-remove-decent: '{prefix}<yellow>Now remove DecentHolograms (or its holograms), or both plugins show the same holograms.'
+
 # Config / reload
 reload-success: '{prefix}<green>Configuration and language files reloaded.'
 language-changed: '{prefix}<green>Language changed to <aqua>{code}</aqua>.'
@@ -156,7 +164,7 @@ help-commands:
   linezoffset: ['linezoffset <name> <#> <blocks>', 'Set per-line depth (Z) offset.']
   lineanim: ['lineanim <name> <#> <rainbow|wave|burn|typewriter|scroll|none> [params]', 'Set text animation effect on a line.']
   rename: ['rename <name> <newname>', 'Rename a hologram.']
-  display: ['display <name> <setting> <value>', 'Adjust display settings (billboard/align/scale/background/opacity/shadow/range/updaterange/linewidth/facing/downorigin/unifiedbg). background accepts #RRGGBB or #AARRGGBB.']
+  display: ['display <name> <setting> <value>', 'Adjust display settings (billboard/align/scale/background/opacity/shadow/range/updaterange/linewidth/facing/downorigin/unifiedbg). background: none (no box, water and glass stay visible), default, game (the game''s box), #RRGGBB or #AARRGGBB.']
   show: ['show <name> <player>', 'Force-show hologram to a player.']
   hide: ['hide <name> <player>', 'Force-hide hologram from a player.']
   clone: ['clone <name> <newname>', 'Clone a hologram.']
@@ -172,5 +180,6 @@ help-commands:
   center: ['center <name>', 'Center hologram on the middle of its block.']
   lineinfo: ['lineinfo <name> <#>', 'Show details about a specific line.']
   flag: ['flag <name> add|remove|list [flag]', 'Manage hologram flags (DISABLE_UPDATING/PLACEHOLDERS/ANIMATIONS/ACTIONS).']
+  import: ['import decentholograms', 'Copy the holograms of DecentHolograms (plugins/DecentHolograms) into dHolograms. Names that exist already are skipped.']
   reload: ['reload', 'Reload config and language files.']
   language: ['language <code>', 'Switch language at runtime.']

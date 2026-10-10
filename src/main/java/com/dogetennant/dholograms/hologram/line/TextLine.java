@@ -8,7 +8,6 @@ import com.dogetennant.dholograms.util.MsgUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -203,13 +202,7 @@ public class TextLine extends HologramLine {
     }
 
     private void applyBackground(TextDisplay entity, int argb) {
-        if (argb == -1) {
-            entity.setDefaultBackground(true);
-        } else {
-            entity.setDefaultBackground(false);
-            entity.setBackgroundColor(Color.fromARGB(
-                    (argb >> 24) & 0xFF, (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF));
-        }
+        com.dogetennant.dholograms.hologram.Backgrounds.apply(entity, argb);
     }
 
     public void refreshDisplaySettings() {
