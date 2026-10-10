@@ -524,27 +524,9 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         if (plugin.getHologramManager().exists(newName)) {
             plugin.getLang().send(sender, "hologram-already-exists", Map.of("name", newName)); return;
         }
-        Hologram clone = plugin.getHologramManager().createHologram(newName, src.getLocation());
-        clone.setDisplaySettings(src.getDisplaySettings().copy());
-        clone.setRefreshTicks(src.getRefreshTicks());
-        clone.setViewPermission(src.getViewPermission());
-        clone.setTag(src.getTag());
-        for (int p = 0; p < src.getPageCount(); p++) {
-            while (clone.getPageCount() <= p) clone.addPage();
-            for (HologramLine line : src.getPage(p)) {
-                HologramLine nl = buildLine(clone, clone.getPage(p).size(), line.getRawContent(), line.getHeightOffset());
-                nl.setXOffset(line.getXOffset());
-                nl.setZOffset(line.getZOffset());
-                if (line instanceof TextLine srcTl && nl instanceof TextLine newTl) {
-                    newTl.setAnimationType(srcTl.getAnimationType());
-                    newTl.setAnimColor1(srcTl.getAnimColor1());
-                    newTl.setAnimColor2(srcTl.getAnimColor2());
-                    newTl.setAnimSpeed(srcTl.getAnimSpeed());
-                }
-                clone.addLine(p, nl);
-            }
-        }
-        plugin.getHologramManager().saveHologram(clone);
+        // Built whole, then registered, saved and shown once - every setting and line comes along
+        // (item and block lines used to come back as text lines, click actions and flags not at all)
+        plugin.getHologramManager().addHologram(src.copyAs(newName));
         plugin.getLang().send(sender, "hologram-cloned", Map.of("name", src.getName(), "newname", newName));
     }
 

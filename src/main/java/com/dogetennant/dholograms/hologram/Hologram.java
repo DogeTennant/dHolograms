@@ -1,7 +1,9 @@
 package com.dogetennant.dholograms.hologram;
 
 import com.dogetennant.dholograms.DHolograms;
+import com.dogetennant.dholograms.hologram.line.EntityLine;
 import com.dogetennant.dholograms.hologram.line.HologramLine;
+import com.dogetennant.dholograms.hologram.line.ItemLine;
 import com.dogetennant.dholograms.hologram.line.TextLine;
 import com.dogetennant.dholograms.hologram.line.AnimationType;
 import net.kyori.adventure.text.Component;
@@ -501,6 +503,62 @@ public class Hologram {
     public void recalculatePositions() { recalculatePositions(0); }
 
     // Line management - page-aware
+
+    /** Adds an empty page without spawning anything (for a hologram not shown yet). */
+    public void addPageInternal() {
+        pages.add(new ArrayList<>());
+    }
+
+    /**
+     * A full copy under another name, not registered or spawned: display settings,
+     * refresh, permission, tag, disabled, flags, click actions, and every page
+     * (empty ones too) with every line as its own type - text with its animation,
+     * item with its spin and bob, block with its spin - offsets and permissions.
+     */
+    public Hologram copyAs(String newName) {
+        Hologram copy = new Hologram(newName, location);
+        copy.setDisplaySettings(displaySettings.copy());
+        copy.setRefreshTicks(refreshTicks);
+        copy.setViewPermission(viewPermission);
+        copy.setTag(tag);
+        copy.setDisabled(disabled);
+        copy.setFlags(flags);
+        clickActions.forEach(copy::setClickAction);
+        for (int p = 0; p < pages.size(); p++) {
+            if (p > 0) copy.addPageInternal();
+            for (HologramLine line : pages.get(p)) {
+                copy.addLineInternal(p, copyLine(copy, line));
+            }
+        }
+        return copy;
+    }
+
+    private static HologramLine copyLine(Hologram to, HologramLine line) {
+        HologramLine copy;
+        if (line instanceof ItemLine item) {
+            ItemLine c = new ItemLine(to, line.getIndex(), item.getRawContent(), item.getHeightOffset());
+            c.setRotationSpeed(item.getRotationSpeed());
+            c.setBobAmplitude(item.getBobAmplitude());
+            copy = c;
+        } else if (line instanceof EntityLine block) {
+            EntityLine c = new EntityLine(to, line.getIndex(), block.getRawContent(), block.getHeightOffset());
+            c.setRotationSpeed(block.getRotationSpeed());
+            copy = c;
+        } else if (line instanceof TextLine text) {
+            TextLine c = new TextLine(to, line.getIndex(), text.getRawContent(), text.getHeightOffset());
+            c.setAnimationType(text.getAnimationType());
+            c.setAnimColor1(text.getAnimColor1());
+            c.setAnimColor2(text.getAnimColor2());
+            c.setAnimSpeed(text.getAnimSpeed());
+            copy = c;
+        } else {
+            throw new IllegalArgumentException("unknown line type " + line.getClass().getName());
+        }
+        copy.setXOffset(line.getXOffset());
+        copy.setZOffset(line.getZOffset());
+        copy.setViewPermission(line.getViewPermission());
+        return copy;
+    }
 
     public void addLineInternal(int pageIndex, HologramLine line) {
         while (pages.size() <= pageIndex) pages.add(new ArrayList<>());

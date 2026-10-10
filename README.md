@@ -121,7 +121,7 @@ The base command is `/dholograms` (alias `/dh`). All subcommands require `dholog
 | `/dh move <name>` | Move a hologram to your current eye position |
 | `/dh tp <name>` | Teleport to a hologram's location |
 | `/dh near <distance>` | Find all holograms within `<distance>` blocks, sorted by proximity |
-| `/dh clone <name> <newname>` | Clone a hologram (copies all lines, pages, display settings, animations) |
+| `/dh clone <name> <newname>` | Clone a hologram: every line (text, item, block) with its animation, spin, offsets and permission, every page, the display settings, click actions, flags, view permission, tag and disabled state |
 | `/dh center <name>` | Snap hologram X/Z to the center of its current block |
 | `/dh disable <name>` | Hide the hologram from all players without deleting it |
 | `/dh enable <name>` | Re-enable a disabled hologram |
