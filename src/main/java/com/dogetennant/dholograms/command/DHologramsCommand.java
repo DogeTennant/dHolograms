@@ -917,11 +917,13 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
     }
 
     private void cmdReload(CommandSender sender, String[] args) {
-        plugin.reloadConfig();
+        // a config.yml with a YAML error is left alone and the settings from before stay
+        boolean configRead = plugin.isConfigReadable();
+        if (configRead) plugin.reloadConfig();
         Backgrounds.configure(plugin.getConfig().getString("holograms.default-background", "none"), plugin.getLogger());
         plugin.getLang().load(plugin.getConfig().getString("language", "en_us"));
         plugin.getHologramManager().respawnAll();
-        plugin.getLang().send(sender, "reload-success");
+        plugin.getLang().send(sender, configRead ? "reload-success" : "reload-config-broken");
     }
 
     private void cmdLanguage(CommandSender sender, String[] args) {

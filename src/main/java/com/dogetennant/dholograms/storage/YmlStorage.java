@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -29,14 +30,23 @@ public class YmlStorage implements StorageProvider {
         this.queue = new SaveQueue(plugin.getLogger());
     }
 
+    /**
+     * Reads holograms.yml. A file with a YAML error is not taken for "no holograms": the next save
+     * would write the holograms in use (none) over it, so this fails and the file stays as it is.
+     */
     @Override
-    public void init() {
+    public void init() throws IOException {
         file = new File(plugin.getDataFolder(), "holograms.yml");
         if (!file.exists()) {
             try { file.createNewFile(); }
             catch (IOException e) { plugin.getLogger().log(Level.SEVERE, "Could not create holograms.yml", e); }
         }
-        config = YamlConfiguration.loadConfiguration(file);
+        config = new YamlConfiguration();
+        try {
+            config.load(file);
+        } catch (InvalidConfigurationException e) {
+            throw new IOException("holograms.yml has a mistake (YAML error): " + e.getMessage(), e);
+        }
     }
 
     /** Waits for the writes still queued, so a change made just before a stop is on disk. */

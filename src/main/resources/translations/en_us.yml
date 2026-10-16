@@ -141,6 +141,7 @@ import-remove-decent: '{prefix}<yellow>Now remove DecentHolograms (or its hologr
 
 # Config / reload
 reload-success: '{prefix}<green>Configuration and language files reloaded.'
+reload-config-broken: '{prefix}<red><white>config.yml</white> has a mistake (YAML error) - the settings from before stay in use. Fix it, then <white>/dh reload</white> again.'
 language-changed: '{prefix}<green>Language changed to <aqua>{code}</aqua>.'
 language-not-found: '{prefix}<red>Language file for <aqua>{code}</aqua> not found.'
 

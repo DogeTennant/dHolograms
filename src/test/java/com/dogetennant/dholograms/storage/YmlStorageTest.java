@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -55,8 +56,32 @@ class YmlStorageTest {
 
     private YmlStorage open() {
         YmlStorage opened = new YmlStorage(plugin);
-        opened.init();
+        try {
+            opened.init();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
         return opened;
+    }
+
+    /** docs/problems/dholograms-settings-file-typos.md */
+    @Test
+    void aTypoInHologramsYmlStopsTheStorageSoTheNextSaveCannotWriteOverIt() throws Exception {
+        Path file = dataFolder.resolve("holograms.yml");
+        String broken = """
+                holograms:
+                  spawn:
+                    world: world
+                    x: 10.0
+                    y: 70.0
+                    z: -5.0
+                broken: [no closing bracket
+                """;
+        Files.writeString(file, broken);
+
+        // before: read as "no holograms", and the next hologram saved wrote only itself into the file
+        assertThatThrownBy(() -> new YmlStorage(plugin).init()).hasMessageContaining("holograms.yml");
+        assertThat(Files.readString(file)).isEqualTo(broken);
     }
 
     private List<Hologram> afterRestart() {

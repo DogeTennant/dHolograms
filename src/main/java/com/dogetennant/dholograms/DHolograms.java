@@ -13,11 +13,15 @@ import com.dogetennant.dholograms.storage.MySQLStorage;
 import com.dogetennant.dholograms.storage.StorageProvider;
 import com.dogetennant.dholograms.storage.YmlStorage;
 import com.dogetennant.dholograms.util.LangManager;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -39,7 +43,23 @@ public class DHolograms extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        // A run stopped before (the same instance enabled again) left its parts behind; onDisable
+        // must only shut down what this run starts - it also runs when this run stays off.
+        storage = null;
+        hologramManager = null;
+        animationTicker = null;
+        refreshTask = null;
+        papiHook = null;
         saveDefaultConfig();
+        // A config.yml with a YAML error reads as empty: dHolograms would run on the built-in
+        // settings, holograms.yml instead of the database among them
+        if (!isConfigReadable()) {
+            getLogger().severe("config.yml has a mistake (YAML error, see above), so dHolograms stays off"
+                    + " instead of running on the built-in settings. Fix it and restart the server.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        reloadConfig();
         com.dogetennant.dholograms.hologram.Backgrounds.configure(
                 getConfig().getString("holograms.default-background", "none"), getLogger());
 
@@ -61,6 +81,12 @@ public class DHolograms extends JavaPlugin {
         try {
             storage.init();
         } catch (Exception e) {
+            if (storage instanceof YmlStorage) {
+                getLogger().severe(e.getMessage() + " - dHolograms stays off, so no hologram save can"
+                        + " write over it. Fix it and restart the server.");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
             getLogger().log(Level.SEVERE, "Failed to initialise storage. Falling back to YML.", e);
             storage = new YmlStorage(this);
             try { storage.init(); } catch (Exception ex) {
@@ -125,6 +151,20 @@ public class DHolograms extends JavaPlugin {
         if (storage != null) storage.close();
         DHologramsAPI.shutdown();
         instance = null;
+    }
+
+    /**
+     * Whether config.yml can be read. A YAML error is logged: Bukkit would read the file as empty,
+     * so the built-in settings would replace every one in it.
+     */
+    public boolean isConfigReadable() {
+        try {
+            new YamlConfiguration().load(new File(getDataFolder(), "config.yml"));
+            return true;
+        } catch (IOException | InvalidConfigurationException e) {
+            getLogger().severe("config.yml cannot be read, so its settings are not used: " + e.getMessage());
+            return false;
+        }
     }
 
     public static DHolograms getInstance() { return instance; }

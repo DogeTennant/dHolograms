@@ -4,7 +4,7 @@
 
   <groupId>com.dogetennant</groupId>
   <artifactId>dHolograms</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
   <packaging>jar</packaging>
 
   <name>dHolograms</name>
@@ -84,6 +84,14 @@
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers-junit-jupiter</artifactId>
       <version>2.0.5</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- A simulated Paper server (tests in the server package load the whole plugin). Its version
+         line must match the Paper API above. -->
+    <dependency>
+      <groupId>org.mockbukkit.mockbukkit</groupId>
+      <artifactId>mockbukkit-v1.21</artifactId>
+      <version>4.116.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

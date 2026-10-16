@@ -3,6 +3,7 @@ package com.dogetennant.dholograms.util;
 import com.dogetennant.dholograms.DHolograms;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -32,7 +33,14 @@ public class LangManager {
             file = new File(plugin.getDataFolder(), "translations/" + code + ".yml");
         }
         try {
-            lang = YamlConfiguration.loadConfiguration(file);
+            lang = new YamlConfiguration();
+            try {
+                lang.load(file);
+            } catch (InvalidConfigurationException e) {
+                // read as empty, so every text comes from the copy in the jar until the file is fixed
+                plugin.getLogger().severe("translations/" + code + ".yml has a mistake (YAML error), so the"
+                        + " built-in texts are used until it is fixed: " + e.getMessage());
+            }
             // Merge defaults from jar so new keys are always present
             InputStream defaults = plugin.getResource("translations/" + code + ".yml");
             if (defaults != null) {

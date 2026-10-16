@@ -49,6 +49,9 @@ display-alignment-set: '{prefix}<green>Zarovnání textu nastaveno na <aqua>{val
 display-scale-set: '{prefix}<green>Měřítko nastaveno na <aqua>{x}</aqua>, <aqua>{y}</aqua>, <aqua>{z}</aqua>.'
 display-background-set: '{prefix}<green>Barva pozadí nastavena na <aqua>{value}</aqua>.'
 display-shadow-set: '{prefix}<green>Stín nastaven na <aqua>{value}</aqua>.'
+display-unifiedbg-set: '{prefix}<green>Společné pozadí nastaveno na <aqua>{value}</aqua>. Když je zapnuté, všechny textové řádky sdílí jeden panel pozadí.'
+display-opacity-set: '{prefix}<green>Průhlednost pozadí nastavena na <aqua>{value}</aqua> (0 = průhledné, 255 = neprůhledné).'
+display-opacity-no-color: '{prefix}<red>Než změníš průhlednost, nastav nejdřív barvu pozadí. Použij <gray>/dh display <název> background #RRGGBB</gray>.'
 display-range-set: '{prefix}<green>Dosah zobrazení nastaven na <aqua>{value}</aqua> bloků.'
 display-linewidth-set: '{prefix}<green>Šířka řádku nastavena na <aqua>{value}</aqua> pixelů. (Text se zalomí na této šířce; zarovnání je pak viditelné.)'
 display-facing-set: '{prefix}<green>Natočení nastaveno na <aqua>{value}</aqua>° (0=jih, 90=západ, 180=sever, 270=východ). Funguje s billboard: FIXED.'
@@ -81,8 +84,9 @@ page-info-header: '{prefix}<aqua>Stránky hologramu <white>{name}</white> (<aqua
 page-info-entry: '  <gray>Stránka <aqua>{index}</aqua>: <white>{lines}</white> řádků'
 
 # Kliknutí pro spuštění
-click-set: '{prefix}<green>Akce kliknutí nastavena na <aqua>{name}</aqua>: spustí <gray>{command}</gray> jako <aqua>{source}</aqua>.'
-click-cleared: '{prefix}<green>Akce kliknutí odebrána z <aqua>{name}</aqua>.'
+click-set: '{prefix}<green>Akce pro kliknutí <aqua>{type}</aqua> nastavena na <aqua>{name}</aqua>: <gray>{actions}</gray>'
+click-cleared: '{prefix}<green>Akce pro kliknutí <aqua>{type}</aqua> odebrána z <aqua>{name}</aqua>.'
+click-invalid-type: '{prefix}<red>Neplatný typ kliknutí <aqua>{value}</aqua>. Platné: right, left, shift-right, shift-left.'
 
 # Zakázání / povolení
 hologram-disabled: '{prefix}<green>Hologram <aqua>{name}</aqua> byl zakázán.'
@@ -135,6 +139,7 @@ import-remove-decent: '{prefix}<yellow>Teď odeberte DecentHolograms (nebo jeho 
 
 # Konfigurace / reload
 reload-success: '{prefix}<green>Konfigurace a jazykové soubory byly znovu načteny.'
+reload-config-broken: '{prefix}<red><white>config.yml</white> obsahuje chybu (chyba YAML) - dál platí dřívější nastavení. Oprav ji a pak znovu dej <white>/dh reload</white>.'
 language-changed: '{prefix}<green>Jazyk změněn na <aqua>{code}</aqua>.'
 language-not-found: '{prefix}<red>Jazykový soubor pro <aqua>{code}</aqua> nebyl nalezen.'
 
@@ -154,7 +159,10 @@ help-commands:
   removeline: ['removeline <název> <#>', 'Odebere řádek.']
   insertline: ['insertline <název> <#> <obsah>', 'Vloží řádek na daný index.']
   lineheight: ['lineheight <název> <#> <výška>', 'Nastaví výšku konkrétního řádku.']
-linexoffset: ['linexoffset <název> <#> <bloky>', 'Nastaví horizontální posun konkrétního řádku.']
+  linexoffset: ['linexoffset <název> <#> <bloky>', 'Nastaví horizontální posun konkrétního řádku.']
+  linezoffset: ['linezoffset <název> <#> <bloky>', 'Nastaví hloubkový (Z) posun konkrétního řádku.']
+  lineanim: ['lineanim <název> <#> <rainbow|wave|burn|typewriter|scroll|none> [parametry]', 'Nastaví animaci textu na řádku.']
+  rename: ['rename <název> <novýnázev>', 'Přejmenuje hologram.']
   display: ['display <název> <nastavení> <hodnota>', 'Upraví nastavení zobrazení (billboard/align/scale/background/shadow/range/updaterange/linewidth/facing/downorigin). background: none (bez pozadí, voda a sklo zůstanou vidět), default, game (pozadí hry), #RRGGBB nebo #AARRGGBB.']
   show: ['show <název> <hráč>', 'Zobrazí hologram konkrétnímu hráči.']
   hide: ['hide <název> <hráč>', 'Skryje hologram před konkrétním hráčem.']
