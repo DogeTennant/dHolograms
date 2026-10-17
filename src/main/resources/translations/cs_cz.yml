@@ -13,6 +13,8 @@ hologram-created: '{prefix}<green>Hologram <aqua>{name}</aqua> byl vytvořen na 
 hologram-deleted: '{prefix}<green>Hologram <aqua>{name}</aqua> byl smazán.'
 hologram-not-found: '{prefix}<red>Hologram <aqua>{name}</aqua> nebyl nalezen.'
 hologram-already-exists: '{prefix}<red>Hologram s názvem <aqua>{name}</aqua> již existuje.'
+# {name} = zadaný název; holograms.yml ukládá hologram pod jeho názvem
+hologram-invalid-name: '{prefix}<red><aqua>{name}</aqua> nemůže být název hologramu: použij jen písmena, číslice, <white>_</white> a <white>-</white>.'
 hologram-moved: '{prefix}<green>Hologram <aqua>{name}</aqua> byl přesunut na vaše místo.'
 hologram-cloned: '{prefix}<green>Hologram <aqua>{name}</aqua> byl naklonován jako <aqua>{newname}</aqua>.'
 hologram-renamed: '{prefix}<green>Hologram <aqua>{name}</aqua> přejmenován na <aqua>{newname}</aqua>.'
@@ -128,6 +130,7 @@ linerotation-not-applicable: '{prefix}<red>Řádek <aqua>{index}</aqua> není it
 # Viditelnost
 hologram-shown: '{prefix}<green>Hologram <aqua>{name}</aqua> je nyní zobrazen hráči <aqua>{player}</aqua>.'
 hologram-hidden: '{prefix}<green>Hologram <aqua>{name}</aqua> je nyní skryt před hráčem <aqua>{player}</aqua>.'
+player-not-online: '{prefix}<red>Hráč <aqua>{player}</aqua> není online.'
 
 # Import z DecentHolograms
 import-no-folder: '{prefix}<red>Ve složce <gray>{folder}</gray> nejsou žádné hologramy DecentHolograms.'
@@ -138,10 +141,12 @@ import-displays: '{prefix}<yellow>Displeje DecentHolograms ve složce plugins/De
 import-remove-decent: '{prefix}<yellow>Teď odeberte DecentHolograms (nebo jeho hologramy), jinak oba pluginy ukážou stejné hologramy.'
 
 # Konfigurace / reload
-reload-success: '{prefix}<green>Konfigurace a jazykové soubory byly znovu načteny.'
+reload-success: '{prefix}<green>Konfigurace, jazykové soubory a hologramy byly znovu načteny.'
+reload-holograms-broken: '{prefix}<red><white>holograms.yml</white> obsahuje chybu (chyba YAML) - dál platí dosavadní hologramy a do souboru se nic neuloží. Oprav ji a pak znovu dej <white>/dh reload</white>.'
 reload-config-broken: '{prefix}<red><white>config.yml</white> obsahuje chybu (chyba YAML) - dál platí dřívější nastavení. Oprav ji a pak znovu dej <white>/dh reload</white>.'
 language-changed: '{prefix}<green>Jazyk změněn na <aqua>{code}</aqua>.'
 language-not-found: '{prefix}<red>Jazykový soubor pro <aqua>{code}</aqua> nebyl nalezen.'
+config-file-broken: '{prefix}<red><white>config.yml</white> obsahuje chybu (chyba YAML), takže se nic nezměnilo. Oprav ji a pak dej <white>/dh reload</white>.'
 
 # Stránky nápovědy
 help-header: '<gradient:aqua:blue>━━━ dHolograms Nápověda (Strana {page}/{total}) ━━━</gradient>'

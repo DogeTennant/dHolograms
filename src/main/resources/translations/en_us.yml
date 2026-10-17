@@ -15,6 +15,8 @@ hologram-created: '{prefix}<green>Hologram <aqua>{name}</aqua> created at your l
 hologram-deleted: '{prefix}<green>Hologram <aqua>{name}</aqua> deleted.'
 hologram-not-found: '{prefix}<red>Hologram <aqua>{name}</aqua> not found.'
 hologram-already-exists: '{prefix}<red>A hologram named <aqua>{name}</aqua> already exists.'
+# {name} = the name typed; holograms.yml keeps a hologram under its name
+hologram-invalid-name: '{prefix}<red><aqua>{name}</aqua> cannot be a hologram name: use letters, digits, <white>_</white> and <white>-</white> only.'
 hologram-moved: '{prefix}<green>Hologram <aqua>{name}</aqua> moved to your location.'
 hologram-cloned: '{prefix}<green>Hologram <aqua>{name}</aqua> cloned as <aqua>{newname}</aqua>.'
 hologram-renamed: '{prefix}<green>Hologram <aqua>{name}</aqua> renamed to <aqua>{newname}</aqua>.'
@@ -130,6 +132,7 @@ linerotation-not-applicable: '{prefix}<red>Line <aqua>{index}</aqua> is not an i
 # Visibility
 hologram-shown: '{prefix}<green>Hologram <aqua>{name}</aqua> is now shown to <aqua>{player}</aqua>.'
 hologram-hidden: '{prefix}<green>Hologram <aqua>{name}</aqua> is now hidden from <aqua>{player}</aqua>.'
+player-not-online: '{prefix}<red>Player <aqua>{player}</aqua> is not online.'
 
 # DecentHolograms import
 import-no-folder: '{prefix}<red>No DecentHolograms holograms found in <gray>{folder}</gray>.'
@@ -140,10 +143,12 @@ import-displays: '{prefix}<yellow>{count} DecentHolograms display(s) in plugins/
 import-remove-decent: '{prefix}<yellow>Now remove DecentHolograms (or its holograms), or both plugins show the same holograms.'
 
 # Config / reload
-reload-success: '{prefix}<green>Configuration and language files reloaded.'
+reload-success: '{prefix}<green>Configuration, language files and holograms reloaded.'
+reload-holograms-broken: '{prefix}<red><white>holograms.yml</white> has a mistake (YAML error) - the holograms in use stay, and no change is saved over the file. Fix it, then <white>/dh reload</white> again.'
 reload-config-broken: '{prefix}<red><white>config.yml</white> has a mistake (YAML error) - the settings from before stay in use. Fix it, then <white>/dh reload</white> again.'
 language-changed: '{prefix}<green>Language changed to <aqua>{code}</aqua>.'
 language-not-found: '{prefix}<red>Language file for <aqua>{code}</aqua> not found.'
+config-file-broken: '{prefix}<red><white>config.yml</white> has a mistake (YAML error), so nothing was changed. Fix it, then <white>/dh reload</white>.'
 
 # Help pages
 help-header: '<gradient:aqua:blue>━━━ dHolograms Help (Page {page}/{total}) ━━━</gradient>'

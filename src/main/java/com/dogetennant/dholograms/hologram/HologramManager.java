@@ -6,8 +6,15 @@ import com.dogetennant.dholograms.storage.StorageProvider;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class HologramManager {
+
+    /**
+     * Letters, digits, {@code _} and {@code -} (as in DecentHolograms): holograms.yml keeps a
+     * hologram under its name, and a dot there starts a new level.
+     */
+    private static final Pattern VALID_NAME = Pattern.compile("[A-Za-z0-9_-]+");
 
     private final DHolograms plugin;
     private final StorageProvider storage;
@@ -34,6 +41,38 @@ public class HologramManager {
         }
     }
 
+    public static boolean isValidName(String name) {
+        return VALID_NAME.matcher(name).matches();
+    }
+
+    /**
+     * /dh reload: every hologram read again from holograms.yml or the database and shown again;
+     * who a hologram is hidden from (/dh hide) stays. False, and the holograms in use stay, when
+     * holograms.yml has a YAML error (logged).
+     */
+    public boolean reloadAll() {
+        List<Hologram> loaded;
+        try {
+            loaded = storage.reloadAll();
+        } catch (java.io.IOException e) {
+            plugin.getLogger().severe(e.getMessage() + " - the holograms in use stay, and nothing is saved"
+                    + " over the file until it is fixed and /dh reload reads it.");
+            return false;
+        }
+        Map<String, Hologram> before = new HashMap<>(holograms);
+        despawnAll();
+        holograms.clear();
+        for (Hologram h : loaded) {
+            String key = h.getName().toLowerCase(Locale.ROOT);
+            Hologram old = before.get(key);
+            if (old != null) h.getHiddenFrom().addAll(old.getHiddenFrom());
+            holograms.put(key, h);
+            h.spawn();
+        }
+        for (Player p : plugin.getServer().getOnlinePlayers()) updateVisibility(p);
+        return true;
+    }
+
     public Hologram getHologram(String name) {
         return holograms.get(name.toLowerCase(Locale.ROOT));
     }
@@ -46,7 +85,11 @@ public class HologramManager {
         return Collections.unmodifiableCollection(holograms.values());
     }
 
+    /** @throws IllegalArgumentException for a name {@link #isValidName} refuses */
     public Hologram createHologram(String name, org.bukkit.Location location) {
+        if (!isValidName(name)) {
+            throw new IllegalArgumentException("Hologram names use letters, digits, _ and - only: " + name);
+        }
         Hologram hologram = new Hologram(name, location);
         hologram.getDisplaySettings().setLineHeight(
                 plugin.getConfig().getDouble("holograms.default-line-height", 0.3));

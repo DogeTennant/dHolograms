@@ -73,16 +73,17 @@ public class InteractionListener implements Listener {
         if (!(entity instanceof Interaction)) return;
 
         UUID entityId = entity.getUniqueId();
+        Hologram prev = plugin.getHologramManager().getHologramByPrevNav(entityId);
+        Hologram next = plugin.getHologramManager().getHologramByNextNav(entityId);
+        Hologram clicked = plugin.getHologramManager().getHologramByClickEntity(entityId);
+        // another plugin's Interaction (a furniture hitbox): its hit is none of our business
+        if (prev == null && next == null && clicked == null) return;
         event.setCancelled(true);
 
-        Hologram prev = plugin.getHologramManager().getHologramByPrevNav(entityId);
         if (prev != null) { prev.prevPage(player); return; }
-
-        Hologram next = plugin.getHologramManager().getHologramByNextNav(entityId);
         if (next != null) { next.nextPage(player); return; }
 
-        Hologram clicked = plugin.getHologramManager().getHologramByClickEntity(entityId);
-        if (clicked == null || !clicked.hasClickActions()) return;
+        if (!clicked.hasClickActions()) return;
         if (clicked.hasFlag(HologramFlag.DISABLE_ACTIONS)) return;
 
         String clickType = player.isSneaking() ? "SHIFT_LEFT" : "LEFT";

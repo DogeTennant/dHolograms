@@ -123,6 +123,12 @@ public class MySQLStorage implements StorageProvider {
     }
 
     @Override
+    public List<Hologram> reloadAll() {
+        queue.flush();
+        return loadAll();
+    }
+
+    @Override
     public List<Hologram> loadAll() {
         List<Hologram> result = new ArrayList<>();
         String sql = "SELECT * FROM dh_holograms";

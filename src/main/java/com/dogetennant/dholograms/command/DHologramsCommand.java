@@ -153,6 +153,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
     private void cmdCreate(CommandSender sender, String[] args) {
         if (args.length < 2) { usage(sender, "/dh create <name> [text...]"); return; }
         String name = args[1];
+        if (!validName(sender, name)) return;
         if (plugin.getHologramManager().exists(name)) {
             plugin.getLang().send(sender, "hologram-already-exists", Map.of("name", name)); return;
         }
@@ -360,6 +361,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         if (plugin.getHologramManager().getHologram(args[1]) == null) {
             plugin.getLang().send(sender, "hologram-not-found", Map.of("name", args[1])); return;
         }
+        if (!validName(sender, args[2])) return;
         if (plugin.getHologramManager().exists(args[2])) {
             plugin.getLang().send(sender, "hologram-already-exists", Map.of("name", args[2])); return;
         }
@@ -503,7 +505,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         if (args.length < 3) { usage(sender, "/dh show <name> <player>"); return; }
         Hologram h = hologram(sender, args[1]); if (h == null) return;
         Player target = Bukkit.getPlayer(args[2]);
-        if (target == null) { plugin.getLang().send(sender, "hologram-not-found", Map.of("name", args[2])); return; }
+        if (target == null) { plugin.getLang().send(sender, "player-not-online", Map.of("player", args[2])); return; }
         h.showTo(target);
         plugin.getLang().send(sender, "hologram-shown", Map.of("name", h.getName(), "player", target.getName()));
     }
@@ -512,7 +514,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         if (args.length < 3) { usage(sender, "/dh hide <name> <player>"); return; }
         Hologram h = hologram(sender, args[1]); if (h == null) return;
         Player target = Bukkit.getPlayer(args[2]);
-        if (target == null) { plugin.getLang().send(sender, "hologram-not-found", Map.of("name", args[2])); return; }
+        if (target == null) { plugin.getLang().send(sender, "player-not-online", Map.of("player", args[2])); return; }
         h.hideFrom(target);
         plugin.getLang().send(sender, "hologram-hidden", Map.of("name", h.getName(), "player", target.getName()));
     }
@@ -521,6 +523,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         if (args.length < 3) { usage(sender, "/dh clone <name> <newname>"); return; }
         Hologram src = hologram(sender, args[1]); if (src == null) return;
         String newName = args[2];
+        if (!validName(sender, newName)) return;
         if (plugin.getHologramManager().exists(newName)) {
             plugin.getLang().send(sender, "hologram-already-exists", Map.of("name", newName)); return;
         }
@@ -747,7 +750,8 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
             plugin.getLang().send(sender, "hologram-already-disabled", Map.of("name", h.getName())); return;
         }
         h.setDisabled(true);
-        for (Player p : plugin.getServer().getOnlinePlayers()) h.hideFrom(p);
+        // not hideFrom: that is /dh hide, a list /dh enable leaves alone
+        for (Player p : plugin.getServer().getOnlinePlayers()) h.applyVisibilityTo(p);
         plugin.getHologramManager().saveHologram(h);
         plugin.getLang().send(sender, "hologram-disabled", Map.of("name", h.getName()));
     }
@@ -922,15 +926,25 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         if (configRead) plugin.reloadConfig();
         Backgrounds.configure(plugin.getConfig().getString("holograms.default-background", "none"), plugin.getLogger());
         plugin.getLang().load(plugin.getConfig().getString("language", "en_us"));
-        plugin.getHologramManager().respawnAll();
-        plugin.getLang().send(sender, configRead ? "reload-success" : "reload-config-broken");
+        // the holograms too, from holograms.yml or the database; a file with a YAML error is left alone
+        boolean hologramsRead = plugin.getHologramManager().reloadAll();
+        if (!hologramsRead) plugin.getHologramManager().respawnAll();
+        if (!configRead) plugin.getLang().send(sender, "reload-config-broken");
+        if (!hologramsRead) plugin.getLang().send(sender, "reload-holograms-broken");
+        if (configRead && hologramsRead) plugin.getLang().send(sender, "reload-success");
     }
 
     private void cmdLanguage(CommandSender sender, String[] args) {
         if (args.length < 2) { usage(sender, "/dh language <code>"); return; }
         String code = args[1].toLowerCase();
+        String before = plugin.getLang().getActiveCode();
         if (!plugin.getLang().load(code)) {
             plugin.getLang().send(sender, "language-not-found", Map.of("code", code)); return;
+        }
+        // kept in config.yml, so a restart or /dh reload keeps it
+        if (!plugin.setConfigValue("language", code)) {
+            plugin.getLang().load(before);
+            plugin.getLang().send(sender, "config-file-broken"); return;
         }
         plugin.getLang().send(sender, "language-changed", Map.of("code", code));
     }
@@ -1142,6 +1156,13 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         Hologram h = plugin.getHologramManager().getHologram(name);
         if (h == null) plugin.getLang().send(sender, "hologram-not-found", Map.of("name", name));
         return h;
+    }
+
+    /** Letters, digits, _ and - only (holograms.yml keeps a hologram under its name). */
+    private boolean validName(CommandSender sender, String name) {
+        if (HologramManager.isValidName(name)) return true;
+        plugin.getLang().send(sender, "hologram-invalid-name", Map.of("name", name));
+        return false;
     }
 
     private int lineIdx(CommandSender sender, Hologram h, String raw) {

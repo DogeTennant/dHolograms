@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
+import com.dogetennant.dholograms.hologram.Hologram;
+
 import java.io.IOException;
 import java.nio.file.Files;
 
@@ -84,6 +86,41 @@ class ConfigFilesServerTest {
 
         assertThat(mc.plugin.getLang().getActiveCode()).isEqualTo("cs_cz");
         assertThat(messages(admin)).singleElement().asString().contains("config.yml");
+        assertThat(Files.readString(mc.file("config.yml"))).isEqualTo(broken);
+    }
+
+    /** docs/problems/dholograms-reload-ignores-holograms-yml.md */
+    @Test
+    void aReloadWithATypoInHologramsYmlKeepsTheHologramsAndSavesNothingOverIt() throws IOException {
+        PlayerMock admin = mc.admin();
+        admin.performCommand("dh create spawn Hello");
+        mc.saved();
+        String broken = Files.readString(mc.file("holograms.yml")) + TYPO;
+        Files.writeString(mc.file("holograms.yml"), broken);
+        messages(admin);
+
+        admin.performCommand("dh reload");
+        admin.performCommand("dh addline spawn Second"); // in game, not over the file
+        mc.saved();
+
+        assertThat(messages(admin)).first().asString().contains("holograms.yml has a mistake");
+        Hologram spawn = mc.hologram("spawn");
+        assertThat(spawn.getLines()).hasSize(2);
+        assertThat(Files.readString(mc.file("holograms.yml"))).isEqualTo(broken);
+    }
+
+    /** docs/problems/dholograms-language-command-not-kept.md */
+    @Test
+    void theLanguageCommandWithATypoInConfigYmlChangesNothing() throws IOException {
+        PlayerMock admin = mc.admin();
+        String broken = Files.readString(mc.file("config.yml")) + TYPO;
+        Files.writeString(mc.file("config.yml"), broken);
+        messages(admin);
+
+        admin.performCommand("dh language cs_cz");
+
+        assertThat(messages(admin)).singleElement().asString().contains("config.yml has a mistake");
+        assertThat(mc.plugin.getLang().getActiveCode()).isEqualTo("en_us");
         assertThat(Files.readString(mc.file("config.yml"))).isEqualTo(broken);
     }
 }

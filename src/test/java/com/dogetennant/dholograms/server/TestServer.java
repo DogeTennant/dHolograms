@@ -1,9 +1,13 @@
 package com.dogetennant.dholograms.server;
 
 import com.dogetennant.dholograms.DHolograms;
+import com.dogetennant.dholograms.hologram.Hologram;
+import com.dogetennant.dholograms.storage.Saves;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
@@ -31,9 +35,12 @@ final class TestServer {
 
     static TestServer start() {
         removeMockitoServer();
+        MockBukkitGaps.fill();
         ServerMock server = MockBukkit.mock();
         server.addSimpleWorld("world");
-        return new TestServer(server, MockBukkit.load(DHolograms.class));
+        TestServer mc = new TestServer(server, MockBukkit.load(DHolograms.class));
+        server.getScheduler().performOneTick(); // the holograms are read on the first tick
+        return mc;
     }
 
     /** The logic tests leave a Mockito server in {@code Bukkit}; MockBukkit refuses to start next to it. */
@@ -53,15 +60,51 @@ final class TestServer {
      * config.yml from disk, so the copy Bukkit kept from the run before is thrown away first.
      */
     void restart() {
+        restart(() -> { });
+    }
+
+    /**
+     * A restart with {@code whileStarting} done after dHolograms started and before the first tick
+     * - where other plugins start (Multiverse loading its worlds).
+     */
+    void restart(Runnable whileStarting) {
         server.getPluginManager().disablePlugin(plugin);
         plugin.reloadConfig();
         server.getPluginManager().enablePlugin(plugin);
+        whileStarting.run();
+        server.getScheduler().performOneTick();
     }
 
     PlayerMock admin() {
         PlayerMock admin = server.addPlayer("Admin");
         admin.setOp(true);
+        admin.setLocation(new Location(world(), 0.5, 64, 0.5));
         return admin;
+    }
+
+    /** A player without op standing a few blocks from the admin (well within a hologram's range). */
+    PlayerMock player(String name) {
+        PlayerMock player = server.addPlayer(name);
+        player.setLocation(new Location(world(), 3.5, 64, 3.5));
+        return player;
+    }
+
+    World world() {
+        return server.getWorld("world");
+    }
+
+    Hologram hologram(String name) {
+        return plugin.getHologramManager().getHologram(name);
+    }
+
+    /** Returns once every hologram save made so far is written to disk. */
+    void saved() {
+        Saves.waitFor(plugin.getStorage());
+    }
+
+    /** The plugin's delayed work (a joining player's holograms are shown 5 ticks later). */
+    void ticks(int ticks) {
+        server.getScheduler().performTicks(ticks);
     }
 
     Path file(String name) {

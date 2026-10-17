@@ -24,6 +24,11 @@ public class YmlStorage implements StorageProvider {
     private final SaveQueue queue;
     private File file;
     private YamlConfiguration config;
+    /**
+     * A reload found a YAML error in holograms.yml: nothing is written over the file (the admin's
+     * edits are in it) until a reload reads it again.
+     */
+    private boolean fileBroken;
 
     public YmlStorage(DHolograms plugin) {
         this.plugin = plugin;
@@ -47,6 +52,21 @@ public class YmlStorage implements StorageProvider {
         } catch (InvalidConfigurationException e) {
             throw new IOException("holograms.yml has a mistake (YAML error): " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public List<Hologram> reloadAll() throws IOException {
+        queue.flush();
+        YamlConfiguration fresh = new YamlConfiguration();
+        try {
+            fresh.load(file);
+        } catch (InvalidConfigurationException e) {
+            fileBroken = true;
+            throw new IOException("holograms.yml has a mistake (YAML error): " + e.getMessage(), e);
+        }
+        fileBroken = false;
+        config = fresh;
+        return loadAll();
     }
 
     /** Waits for the writes still queued, so a change made just before a stop is on disk. */
@@ -267,6 +287,11 @@ public class YmlStorage implements StorageProvider {
      * Written to a temporary file first and moved over, so a crash cannot leave half a file.
      */
     private void saveAsync() {
+        if (fileBroken) {
+            plugin.getLogger().warning("holograms.yml has a mistake (YAML error), so this change is not saved"
+                    + " over it. Fix the file, then /dh reload.");
+            return;
+        }
         String text = config.saveToString();
         java.nio.file.Path target = file.toPath();
         queue.submit(() -> {

@@ -104,9 +104,10 @@ public class DHolograms extends JavaPlugin {
             getLogger().info("PlaceholderAPI integration enabled.");
         }
 
-        // Hologram manager
+        // Hologram manager. The holograms are read on the first server tick, when every plugin has
+        // started: a world plugin (Multiverse) loads its worlds in its own start, maybe after this one
         hologramManager = new HologramManager(this, storage);
-        hologramManager.loadAll();
+        getServer().getScheduler().runTask(this, hologramManager::loadAll);
 
         // API
         DHologramsAPI.init(hologramManager);
@@ -165,6 +166,27 @@ public class DHolograms extends JavaPlugin {
             getLogger().severe("config.yml cannot be read, so its settings are not used: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Changes one option, in the settings in use and in config.yml on disk; everything else in the
+     * file stays as it is there. A file with a YAML error is left alone.
+     *
+     * @return false when config.yml has an error (nothing changed)
+     */
+    public boolean setConfigValue(String path, Object value) {
+        File file = new File(getDataFolder(), "config.yml");
+        YamlConfiguration onDisk = new YamlConfiguration();
+        try {
+            onDisk.load(file);
+            onDisk.set(path, value);
+            onDisk.save(file);
+        } catch (IOException | InvalidConfigurationException e) {
+            getLogger().severe("config.yml cannot be changed, so it is left as it is: " + e.getMessage());
+            return false;
+        }
+        getConfig().set(path, value);
+        return true;
     }
 
     public static DHolograms getInstance() { return instance; }

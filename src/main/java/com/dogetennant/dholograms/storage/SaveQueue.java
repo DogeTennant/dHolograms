@@ -43,6 +43,19 @@ final class SaveQueue {
         }
     }
 
+    /** Waits until every write queued so far is done (a reload reads what they wrote). */
+    void flush() {
+        java.util.concurrent.CountDownLatch written = new java.util.concurrent.CountDownLatch(1);
+        submit(written::countDown);
+        try {
+            if (!written.await(30, TimeUnit.SECONDS)) {
+                logger.severe("Hologram saves did not finish in time - a reload may read an older state.");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     /** Takes no new work and waits for what is queued (plugin disable). */
     void close(long timeout, TimeUnit unit) {
         executor.shutdown();
