@@ -142,6 +142,7 @@ import-remove-decent: '{prefix}<yellow>Teď odeberte DecentHolograms (nebo jeho 
 
 # Konfigurace / reload
 reload-success: '{prefix}<green>Konfigurace, jazykové soubory a hologramy byly znovu načteny.'
+reload-storage-restart: '{prefix}<yellow>Nastavení úložiště (<white>storage</white> v config.yml) se změnilo. dHolograms používá staré úložiště, dokud se server nerestartuje.'
 reload-holograms-broken: '{prefix}<red><white>holograms.yml</white> obsahuje chybu (chyba YAML) - dál platí dosavadní hologramy a do souboru se nic neuloží. Oprav ji a pak znovu dej <white>/dh reload</white>.'
 reload-config-broken: '{prefix}<red><white>config.yml</white> obsahuje chybu (chyba YAML) - dál platí dřívější nastavení. Oprav ji a pak znovu dej <white>/dh reload</white>.'
 language-changed: '{prefix}<green>Jazyk změněn na <aqua>{code}</aqua>.'

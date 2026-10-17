@@ -23,7 +23,9 @@ import org.bukkit.scheduler.BukkitTask;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 
 public class DHolograms extends JavaPlugin {
@@ -36,6 +38,8 @@ public class DHolograms extends JavaPlugin {
     private AnimationTicker animationTicker;
     private BukkitTask refreshTask;
     private PAPIHook papiHook;
+    /** The storage settings the storage was opened with (a reload does not reopen it). */
+    private Map<String, Object> storageInUse;
     // Entities registered here during world.spawn() have their spawn un-cancelled at HIGHEST priority,
     // bypassing plugins like Multiverse that block misc entity spawning.
     private final Set<Entity> managedSpawns = new HashSet<>();
@@ -72,6 +76,7 @@ public class DHolograms extends JavaPlugin {
         }
 
         // Storage
+        storageInUse = storageSettings();
         String storageType = getConfig().getString("storage.type", "yml");
         if ("mysql".equalsIgnoreCase(storageType)) {
             storage = new MySQLStorage(this);
@@ -187,6 +192,23 @@ public class DHolograms extends JavaPlugin {
         }
         getConfig().set(path, value);
         return true;
+    }
+
+    /** Whether config.yml now names other storage than the one in use (it changes at a restart). */
+    public boolean storageSettingsChanged() {
+        return !storageSettings().equals(storageInUse);
+    }
+
+    /** Every value under {@code storage} in config.yml. */
+    private Map<String, Object> storageSettings() {
+        Map<String, Object> settings = new TreeMap<>();
+        var section = getConfig().getConfigurationSection("storage");
+        if (section != null) {
+            section.getValues(true).forEach((key, value) -> {
+                if (!(value instanceof org.bukkit.configuration.ConfigurationSection)) settings.put(key, value);
+            });
+        }
+        return settings;
     }
 
     public static DHolograms getInstance() { return instance; }

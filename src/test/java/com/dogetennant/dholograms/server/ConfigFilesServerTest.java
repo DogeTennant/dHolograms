@@ -7,6 +7,7 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 import com.dogetennant.dholograms.hologram.Hologram;
+import com.dogetennant.dholograms.storage.YmlStorage;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -87,6 +88,22 @@ class ConfigFilesServerTest {
         assertThat(mc.plugin.getLang().getActiveCode()).isEqualTo("cs_cz");
         assertThat(messages(admin)).singleElement().asString().contains("config.yml");
         assertThat(Files.readString(mc.file("config.yml"))).isEqualTo(broken);
+    }
+
+    /** docs/problems/dholograms-reload-silent-about-storage-changes.md */
+    @Test
+    void aReloadAfterAStorageChangeSaysItNeedsARestart() throws IOException {
+        PlayerMock admin = mc.admin();
+        admin.performCommand("dh reload");
+        assertThat(messages(admin)).containsExactly("[dHolograms] Configuration, language files and holograms reloaded.");
+        mc.replace("config.yml", "type: yml", "type: mysql");
+
+        admin.performCommand("dh reload");
+
+        assertThat(messages(admin)).containsExactly("[dHolograms] Configuration, language files and holograms reloaded.",
+                "[dHolograms] The storage settings (storage in config.yml) changed. dHolograms keeps using the"
+                        + " old storage until the server restarts.");
+        assertThat(mc.plugin.getStorage()).isInstanceOf(YmlStorage.class); // still holograms.yml
     }
 
     /** docs/problems/dholograms-reload-ignores-holograms-yml.md */

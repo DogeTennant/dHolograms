@@ -144,6 +144,7 @@ import-remove-decent: '{prefix}<yellow>Now remove DecentHolograms (or its hologr
 
 # Config / reload
 reload-success: '{prefix}<green>Configuration, language files and holograms reloaded.'
+reload-storage-restart: '{prefix}<yellow>The storage settings (<white>storage</white> in config.yml) changed. dHolograms keeps using the old storage until the server restarts.'
 reload-holograms-broken: '{prefix}<red><white>holograms.yml</white> has a mistake (YAML error) - the holograms in use stay, and no change is saved over the file. Fix it, then <white>/dh reload</white> again.'
 reload-config-broken: '{prefix}<red><white>config.yml</white> has a mistake (YAML error) - the settings from before stay in use. Fix it, then <white>/dh reload</white> again.'
 language-changed: '{prefix}<green>Language changed to <aqua>{code}</aqua>.'

@@ -932,6 +932,8 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
         if (!configRead) plugin.getLang().send(sender, "reload-config-broken");
         if (!hologramsRead) plugin.getLang().send(sender, "reload-holograms-broken");
         if (configRead && hologramsRead) plugin.getLang().send(sender, "reload-success");
+        // the storage is opened once, at start
+        if (configRead && plugin.storageSettingsChanged()) plugin.getLang().send(sender, "reload-storage-restart");
     }
 
     private void cmdLanguage(CommandSender sender, String[] args) {
