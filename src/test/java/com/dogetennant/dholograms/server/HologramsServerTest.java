@@ -72,6 +72,51 @@ class HologramsServerTest {
         assertThat(itemLine(spawn)).isNotNull(); // shown again
     }
 
+    /** docs/problems/dholograms-no-command-for-view-permission.md */
+    @Test
+    void aViewPermissionSetInGameHidesTheHologramFromPlayersWithoutItAndIsKeptOverARestart() {
+        admin.performCommand("dh create spawn <gold>Welcome");
+        admin.performCommand("dh addline spawn item:DIAMOND");
+        PlayerMock alex = mc.player("Alex");
+        mc.ticks(5);
+        assertThat(alex.canSee(itemLine(mc.hologram("spawn")))).isTrue();
+
+        admin.performCommand("dh display spawn permission spawn.see");
+
+        assertThat(mc.hologram("spawn").getViewPermission()).isEqualTo("spawn.see");
+        assertThat(mc.hologram("spawn").isVisibleTo(alex)).isFalse();
+        assertThat(alex.canSee(itemLine(mc.hologram("spawn")))).isFalse();
+
+        alex.addAttachment(mc.plugin, "spawn.see", true);
+        assertThat(mc.hologram("spawn").isVisibleTo(alex)).isTrue();
+
+        mc.restart();
+        assertThat(mc.hologram("spawn").getViewPermission()).isEqualTo("spawn.see");
+    }
+
+    @Test
+    void noneTakesTheViewPermissionOff() {
+        admin.performCommand("dh create spawn <gold>Welcome");
+        PlayerMock alex = mc.player("Alex");
+        admin.performCommand("dh display spawn permission spawn.see");
+        assertThat(mc.hologram("spawn").isVisibleTo(alex)).isFalse();
+
+        admin.performCommand("dh display spawn permission none");
+
+        assertThat(mc.hologram("spawn").getViewPermission()).isNull();
+        assertThat(mc.hologram("spawn").isVisibleTo(alex)).isTrue();
+    }
+
+    /** The view_permission column in MySQL takes 128 characters. */
+    @Test
+    void aViewPermissionTooLongForTheDatabaseIsRefused() {
+        admin.performCommand("dh create spawn <gold>Welcome");
+
+        admin.performCommand("dh display spawn permission " + "a".repeat(129));
+
+        assertThat(mc.hologram("spawn").getViewPermission()).isNull();
+    }
+
     @Test
     void renameCloneAndDeleteAreKeptOverARestart() {
         admin.performCommand("dh create spawn Hello");

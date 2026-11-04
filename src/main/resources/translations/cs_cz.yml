@@ -58,6 +58,8 @@ display-range-set: '{prefix}<green>Dosah zobrazení nastaven na <aqua>{value}</a
 display-linewidth-set: '{prefix}<green>Šířka řádku nastavena na <aqua>{value}</aqua> pixelů. (Text se zalomí na této šířce; zarovnání je pak viditelné.)'
 display-facing-set: '{prefix}<green>Natočení nastaveno na <aqua>{value}</aqua>° (0=jih, 90=západ, 180=sever, 270=východ). Funguje s billboard: FIXED.'
 display-downorigin-set: '{prefix}<green>Down-origin nastaven na <aqua>{value}</aqua>.'
+display-permission-set: '{prefix}<green>Tento hologram teď vidí jen hráči s oprávněním <aqua>{value}</aqua>.'
+display-permission-cleared: '{prefix}<green>Tento hologram teď vidí všichni v dosahu.'
 display-updaterange-set: '{prefix}<green>Dosah aktualizace nastaven na <aqua>{value}</aqua> bloků. Zástupné symboly PAPI se obnoví pouze v tomto okruhu.'
 display-invalid-value: '{prefix}<red>Neplatná hodnota <aqua>{value}</aqua> pro nastavení <aqua>{setting}</aqua>.'
 
@@ -169,7 +171,7 @@ help-commands:
   linezoffset: ['linezoffset <název> <#> <bloky>', 'Nastaví hloubkový (Z) posun konkrétního řádku.']
   lineanim: ['lineanim <název> <#> <rainbow|wave|burn|typewriter|scroll|none> [parametry]', 'Nastaví animaci textu na řádku.']
   rename: ['rename <název> <novýnázev>', 'Přejmenuje hologram.']
-  display: ['display <název> <nastavení> <hodnota>', 'Upraví nastavení zobrazení (billboard/align/scale/background/shadow/range/updaterange/linewidth/facing/downorigin). background: none (bez pozadí, voda a sklo zůstanou vidět), default, game (pozadí hry), #RRGGBB nebo #AARRGGBB.']
+  display: ['display <název> <nastavení> <hodnota>', 'Upraví nastavení zobrazení (billboard/align/scale/background/shadow/range/updaterange/linewidth/facing/downorigin/permission). background: none (bez pozadí, voda a sklo zůstanou vidět), default, game (pozadí hry), #RRGGBB nebo #AARRGGBB. permission: oprávnění potřebné k zobrazení hologramu, nebo none.']
   show: ['show <název> <hráč>', 'Zobrazí hologram konkrétnímu hráči.']
   hide: ['hide <název> <hráč>', 'Skryje hologram před konkrétním hráčem.']
   clone: ['clone <název> <novýnázev>', 'Naklonuje hologram.']

@@ -45,7 +45,10 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
 
     private static final List<String> ANIM_TYPES       = List.of("rainbow", "wave", "burn", "typewriter", "scroll", "none");
     private static final List<String> CLICK_TYPES      = List.of("right", "left", "shift-right", "shift-left");
-    private static final List<String> DISPLAY_SETTINGS = List.of("billboard", "align", "scale", "background", "opacity", "shadow", "range", "updaterange", "linewidth", "facing", "downorigin", "unifiedbg");
+    /** The view_permission column in MySQL. */
+    private static final int MAX_PERMISSION = 128;
+
+    private static final List<String> DISPLAY_SETTINGS = List.of("billboard", "align", "scale", "background", "opacity", "shadow", "range", "updaterange", "linewidth", "facing", "downorigin", "unifiedbg", "permission");
     private static final List<String> BILLBOARDS       = List.of("FIXED", "VERTICAL", "HORIZONTAL", "CENTER");
     private static final List<String> ALIGNMENTS       = List.of("LEFT", "CENTER", "RIGHT");
 
@@ -490,6 +493,22 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
                     plugin.getLang().send(sender, "display-invalid-value",
                             Map.of("value", args[3], "setting", "updaterange")); return;
                 }
+            }
+            case "permission" -> {
+                // the node needed to see the hologram at all; "none" takes it off
+                String node = args[3];
+                if (node.length() > MAX_PERMISSION) {
+                    plugin.getLang().send(sender, "display-invalid-value",
+                            Map.of("value", node, "setting", "permission")); return;
+                }
+                if (node.equalsIgnoreCase("none")) {
+                    h.setViewPermission(null);
+                    plugin.getLang().send(sender, "display-permission-cleared");
+                } else {
+                    h.setViewPermission(node);
+                    plugin.getLang().send(sender, "display-permission-set", Map.of("value", node));
+                }
+                needReload = false;
             }
             default -> {
                 plugin.getLang().send(sender, "display-invalid-value",
@@ -1056,6 +1075,7 @@ public class DHologramsCommand implements CommandExecutor, TabCompleter {
             case "linewidth"   -> List.of("200", "400", "600", "1000");
             case "facing"      -> List.of("0", "90", "180", "270");
             case "updaterange" -> List.of("16", "32", "48", "64");
+            case "permission"  -> List.of("none");
             default            -> List.of();
         };
         return List.of();

@@ -101,7 +101,7 @@ holograms:
 |---|---|---|
 | `dholograms.admin` | Full access to all dHolograms commands | `op` |
 
-A per-hologram **view permission** can optionally be set with `/dh display` - players without that node simply won't see the hologram at all. Individual lines also support their own permission node via `/dh linepermission`.
+A per-hologram **view permission** can optionally be set with `/dh display <name> permission <node>` (`none` takes it off) - players without that node simply won't see the hologram at all. Individual lines also support their own permission node via `/dh linepermission`.
 
 ---
 
@@ -196,6 +196,7 @@ Holograms start with one page. Adding a second page automatically spawns interac
 | `linewidth` | `<pixels>` | Pixel width before text wraps (default `200`) |
 | `facing` | `<degrees>` | Yaw rotation, useful with `FIXED` billboard |
 | `downorigin` | `true` `false` | Stack lines downward from anchor (default) or upward when `true` |
+| `permission` | `<node>` or `none` | Only players with this node see the hologram. `none` takes it off |
 
 ### Visibility (Show/Hide)
 
