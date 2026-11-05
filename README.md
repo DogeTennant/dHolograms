@@ -286,6 +286,8 @@ Set animations on any **text line** with:
 | `SCROLL` | Text scrolls horizontally through a sliding window | No |
 | `NONE` | Removes any existing animation | - |
 
+Formatting stays with every animation: `<bold>`, `&l`, italic, underline and so on. `RAINBOW`, `WAVE` and `BURN` choose the colours themselves; `TYPEWRITER` and `SCROLL` keep the line's own.
+
 **Examples:**
 
 ```

@@ -3,11 +3,12 @@ package com.dogetennant.dholograms.hologram.line;
 import com.dogetennant.dholograms.DHolograms;
 import com.dogetennant.dholograms.hologram.DisplaySettings;
 import com.dogetennant.dholograms.hologram.Hologram;
+import com.dogetennant.dholograms.hologram.line.StyledLetters.Letter;
 import com.dogetennant.dholograms.placeholder.PAPIHook;
 import com.dogetennant.dholograms.util.MsgUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -16,7 +17,13 @@ import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class TextLine extends HologramLine {
+
+    private static final Letter SCROLL_GAP = new Letter(" ", Style.empty());
 
     private String rawContent;
 
@@ -90,72 +97,76 @@ public class TextLine extends HologramLine {
     // Animation builders
 
     private Component buildAnimatedComponent() {
-        String text = plainText();
-        if (text.isEmpty()) return Component.empty();
+        List<Letter> letters = StyledLetters.of(MsgUtil.parse(rawContent));
+        if (letters.isEmpty()) return Component.empty();
         return switch (animationType) {
-            case RAINBOW    -> buildRainbow(text);
-            case WAVE       -> buildWave(text);
-            case BURN       -> buildBurn(text);
-            case TYPEWRITER -> buildTypewriter(text);
-            case SCROLL     -> buildScroll(text);
+            case RAINBOW    -> buildRainbow(letters);
+            case WAVE       -> buildWave(letters);
+            case BURN       -> buildBurn(letters);
+            case TYPEWRITER -> buildTypewriter(letters);
+            case SCROLL     -> buildScroll(letters);
             default         -> MsgUtil.parse(rawContent);
         };
     }
 
-    private String plainText() {
-        return PlainTextComponentSerializer.plainText().serialize(MsgUtil.parse(rawContent));
-    }
-
-    private Component buildRainbow(String text) {
+    private Component buildRainbow(List<Letter> letters) {
         var b = Component.text();
-        int n = text.length();
+        int n = letters.size();
         for (int i = 0; i < n; i++) {
             float hue = ((float) i / n + (float) animTick / (animSpeed * 50f)) % 1f;
-            b.append(Component.text(String.valueOf(text.charAt(i))).color(TextColor.color(hsvToRgb(hue))));
+            b.append(letters.get(i).component(hsvToRgb(hue)));
         }
         return b.build();
     }
 
-    private Component buildWave(String text) {
+    private Component buildWave(List<Letter> letters) {
         var b = Component.text();
-        int n = text.length();
+        int n = letters.size();
         for (int i = 0; i < n; i++) {
             float phase = ((float) i / n + (float) animTick / (animSpeed * 30f)) % 1f;
             float t = (float) Math.sin(phase * 2 * Math.PI) * 0.5f + 0.5f;
-            b.append(Component.text(String.valueOf(text.charAt(i))).color(TextColor.color(lerpColor(animColor1, animColor2, t))));
+            b.append(letters.get(i).component(lerpColor(animColor1, animColor2, t)));
         }
         return b.build();
     }
 
-    private Component buildBurn(String text) {
+    private Component buildBurn(List<Letter> letters) {
         int period = animSpeed * 60;
         float front = (float) (animTick % period) / period;
         var b = Component.text();
-        int n = text.length();
+        int n = letters.size();
         for (int i = 0; i < n; i++) {
             float pos = n > 1 ? (float) i / (n - 1) : 0f;
             float t = Math.max(0f, Math.min(1f, (front - pos) * n + 0.5f));
-            b.append(Component.text(String.valueOf(text.charAt(i))).color(TextColor.color(lerpColor(animColor1, animColor2, t))));
+            b.append(letters.get(i).component(lerpColor(animColor1, animColor2, t)));
         }
         return b.build();
     }
 
-    private Component buildTypewriter(String text) {
-        int n = text.length();
+    private Component buildTypewriter(List<Letter> letters) {
+        int n = letters.size();
         int totalTicks = n * animSpeed;
         int pauseTicks  = animSpeed * 20;
         int step = animTick % (totalTicks + pauseTicks);
         int visible = Math.min(step / animSpeed, n);
-        return visible <= 0 ? Component.text(" ") : Component.text(text.substring(0, visible));
+        return visible <= 0 ? Component.text(" ") : join(letters.subList(0, visible));
     }
 
-    private Component buildScroll(String text) {
-        String padded = text + "    ";
-        int window = Math.max(3, text.length() * 2 / 3);
-        int offset = (animTick / Math.max(1, animSpeed)) % padded.length();
-        var sb = new StringBuilder(window);
-        for (int i = 0; i < window; i++) sb.append(padded.charAt((offset + i) % padded.length()));
-        return Component.text(sb.toString());
+    private Component buildScroll(List<Letter> letters) {
+        List<Letter> padded = new ArrayList<>(letters);
+        padded.addAll(Collections.nCopies(4, SCROLL_GAP));
+        int window = Math.max(3, letters.size() * 2 / 3);
+        int offset = (animTick / Math.max(1, animSpeed)) % padded.size();
+        List<Letter> shown = new ArrayList<>(window);
+        for (int i = 0; i < window; i++) shown.add(padded.get((offset + i) % padded.size()));
+        return join(shown);
+    }
+
+    /** One component: neighbouring letters of the same style are merged, so a plain line stays small. */
+    private static Component join(List<Letter> letters) {
+        var b = Component.text();
+        letters.forEach(letter -> b.append(letter.component()));
+        return b.build().compact();
     }
 
     // Colour helpers
